@@ -1,6 +1,9 @@
+import 'package:application/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:application/login_screen.dart'; // Import your login screen
+import 'create_join_view.dart'; // Import your CreateJoinView
+import 'open_competitions_view.dart'; // Import OpenCompetitionsView
+import 'my_competitions_view.dart'; // Import your MyCompetitionsView
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -10,7 +13,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0; // Tracks the selected menu option
+  int _selectedIndex = 0;
   String? username;
 
   @override
@@ -23,7 +26,6 @@ class DashboardScreenState extends State<DashboardScreen> {
     final user = Supabase.instance.client.auth.currentUser;
 
     if (user != null) {
-      // Fetch the username from the users table
       final response = await Supabase.instance.client
           .from('users')
           .select('username')
@@ -33,11 +35,11 @@ class DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         username = response != null && response['username'] != null
             ? response['username'] as String
-            : 'User'; // Fallback to 'User'
+            : 'User';
       });
     } else {
       setState(() {
-        username = 'User'; // Fallback to 'User'
+        username = 'User';
       });
     }
   }
@@ -73,41 +75,40 @@ class DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: _logout, // Log out on press
+            onPressed: _logout,
           ),
         ],
       ),
       body: Column(
         children: [
           const SizedBox(height: 20),
-          // Dynamic welcome message with a smaller font size
           Text(
             'Welcome, ${username ?? 'User'}',
             style: const TextStyle(
-              fontSize: 18, // Reduced font size
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1C6E47),
             ),
           ),
           const SizedBox(height: 20),
-          // Scrollable row for the menu buttons
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 _menuButton("Create / Join", 0),
                 _menuButton("My Competitions", 1),
+                _menuButton("Open Competitions", 2),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          // IndexedStack will display the corresponding content for the selected menu
           Expanded(
             child: IndexedStack(
               index: _selectedIndex,
-              children: [
-                _createJoinView(), // First tab content
-                _myCompetitionsView(), // Second tab content
+              children: const [
+                CreateJoinView(), // Tab 1: Create/Join Competitions
+                MyCompetitionsView(), // Tab 2: My Competitions
+                OpenCompetitionsView(), // Tab 3: Open Competitions
               ],
             ),
           ),
@@ -116,7 +117,6 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Function for creating menu buttons
   Widget _menuButton(String title, int index) {
     bool isActive = _selectedIndex == index;
     return Padding(
@@ -124,7 +124,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       child: GestureDetector(
         onTap: () {
           setState(() {
-            _selectedIndex = index; // Change selected index on tap
+            _selectedIndex = index;
           });
         },
         child: Container(
@@ -144,127 +144,6 @@ class DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  // Content for the "Create / Join" view
-  Widget _createJoinView() {
-    return Column(
-      children: [
-        const Text(
-          'Create or Join a Competition',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            // Handle create/join action
-          },
-          child: const Text('Create a Competition'),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            // Handle join action
-          },
-          child: const Text('Join a Competition'),
-        ),
-      ],
-    );
-  }
-
-  // Content for the "My Competitions" view
-  Widget _myCompetitionsView() {
-    return Column(
-      children: [
-        const Text(
-          'My Competitions',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        // Example of competition listing
-        Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF1C6E47)),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Competition Name: WC Prediction Competition \'22'),
-              SizedBox(height: 8),
-              Text('Organizer: JSMITH99'),
-              SizedBox(height: 8),
-              Text('No. of Entries: 18'),
-              SizedBox(height: 8),
-              Text('Leaders Points: 35'),
-              SizedBox(height: 8),
-              Text('Current Pos: 8th'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        // Example of leaderboard section within My Competitions
-        _leaderboard(),
-      ],
-    );
-  }
-
-  Widget _leaderboard() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF1C6E47)),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            children: [
-              const Text(
-                'Leaderboard',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _leaderboardRow('USERNAME', 'PL', 'W', 'D', 'L', 'GD', 'P'),
-              const Divider(),
-              _leaderboardRow('SWAPGN23', '15', '10', '-', '-', '-', '25'),
-              _leaderboardRow('JTWOODS', '16', '7', '-', '-', '-', '23'),
-              _leaderboardRow('ADGAV11', '15', '7', '-', '-', '-', '22'),
-              _leaderboardRow('JSMITH99', '12', '7', '-', '-', '-', '19'),
-            ],
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            // Handle view full leaderboard action
-          },
-          child: const Text(
-            'View Full Leaderboard',
-            style: TextStyle(color: Color(0xFF1C6E47)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _leaderboardRow(String username, String pl, String w, String d,
-      String l, String gd, String p) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(username),
-        Text(pl),
-        Text(w),
-        Text(d),
-        Text(l),
-        Text(gd),
-        Text(p),
-      ],
     );
   }
 }
