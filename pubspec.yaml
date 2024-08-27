@@ -59,7 +59,6 @@ dev_dependencies:
 flutter:
   assets:
     - lib/assets/logo.png
-    - lib/.env
     - lib/assets/small_logo.png
     - lib/assets/background.jpg
     - lib/assets/backdrop.jpg
