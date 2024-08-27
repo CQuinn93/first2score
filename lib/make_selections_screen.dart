@@ -11,7 +11,7 @@ class MakeSelectionsScreen extends StatefulWidget {
 }
 
 List<String> squads = [
-  "ALL", // Added 'ALL' as a filter option for teams
+  "ALL",
   "Arsenal",
   "Aston Villa",
   "Bournemouth",
@@ -34,15 +34,17 @@ List<String> squads = [
   "Wolves"
 ];
 
+List<String> positions = ["ALL", "Defender", "Midfielder", "Striker"];
+
 class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   int defendersCount = 0;
   int midfieldersCount = 0;
   int attackersCount = 0;
   List<int> selectedPlayerIds = [];
-  String selectedTeam = 'ALL'; // Default team filter is 'ALL'
-  String selectedPosition = 'ALL'; // Default to show all positions
+  String selectedTeam = 'ALL';
+  String selectedPosition = 'ALL'; // Updated to match names
   List<Map<String, dynamic>> players = [];
-  List<Map<String, dynamic>> filteredPlayers = []; // Filtered players array
+  List<Map<String, dynamic>> filteredPlayers = [];
   String searchQuery = '';
   bool sortByGoals = false;
 
@@ -123,8 +125,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   // Map position number to position name
   String _getPositionName(int positionId) {
     switch (positionId) {
-      case 1:
-        return 'Goalkeeper';
       case 2:
         return 'Defender';
       case 3:
@@ -138,41 +138,67 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
 
   // Map team number to team name
   String _getTeamName(int teamId) {
-    return squads[teamId]; // Update to reflect the addition of 'ALL'
+    return squads[teamId];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar:
+          false, // Ensure app bar is not extended behind the body
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C6E47),
-        title: const Text("Make Your Selections"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Image.asset(
+          'lib/assets/logo.png', // Update this path based on your actual asset location
+          height: 40, // Adjust the height as needed
+        ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          _buildPositionCounters(),
-          const SizedBox(height: 10),
-          _buildFilters(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredPlayers.length,
-              itemBuilder: (context, index) {
-                final player = filteredPlayers[index];
-                final isSelected = selectedPlayerIds.contains(player['id']);
-                return _buildPlayerCard(player, isSelected);
-              },
-            ),
-          ),
-          if (selectedPlayerIds.length == 20)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle confirm action
-                },
-                child: const Text("Confirm Selections"),
+          // Background image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/assets/background.jpg'),
+                fit: BoxFit.cover,
               ),
             ),
+          ),
+          Column(
+            children: [
+              _buildPositionCounters(), // Now it will appear below the app bar
+              _buildFilters(),
+              ElevatedButton(
+                onPressed: _showSelections,
+                child: const Text("View Selections"),
+              ),
+              const SizedBox(
+                  height:
+                      5), // Reduce the gap between "View Selections" and the cards
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredPlayers.length,
+                  itemBuilder: (context, index) {
+                    final player = filteredPlayers[index];
+                    final isSelected = selectedPlayerIds.contains(player['id']);
+                    return _buildPlayerCard(player, isSelected);
+                  },
+                ),
+              ),
+              if (selectedPlayerIds.length == 20)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Handle confirm action
+                    },
+                    child: const Text("Confirm Selections"),
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );
@@ -180,91 +206,82 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
 
   // Build player card widget
   Widget _buildPlayerCard(Map<String, dynamic> player, bool isSelected) {
+    final bool hasNews = player['news'] != null && player['news'].isNotEmpty;
+
     return GestureDetector(
-      onTap: () => _togglePlayerSelection(
-        (player['id'] is int) ? player['id'] : (player['id'] as double).toInt(),
-        (player['position'] is int)
-            ? player['position']
-            : (player['position'] as double).toInt(),
-      ),
+      onTap: () {
+        if (hasNews) {
+          _showNewsDialog(player, isSelected);
+        } else {
+          _togglePlayerSelection(
+            (player['id'] is int)
+                ? player['id']
+                : (player['id'] as double).toInt(),
+            (player['position'] is int)
+                ? player['position']
+                : (player['position'] as double).toInt(),
+          );
+        }
+      },
       child: Card(
-        color: isSelected ? const Color(0xFF1C6E47) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(10),
+        color: isSelected
+            ? const Color(0xFF1C6E47).withOpacity(0.7)
+            : Colors.white.withOpacity(0.5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: hasNews
+              ? const BorderSide(color: Colors.redAccent, width: 2.0)
+              : BorderSide.none,
+        ),
+        margin: const EdgeInsets.all(8),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           child: Row(
             children: [
               CircleAvatar(
                 backgroundImage: NetworkImage(player['profile_pic_url'] ?? ''),
                 backgroundColor: Colors.grey[200],
-                radius: 25,
+                radius: 20,
                 child: player['profile_pic_url'] == null
                     ? const Icon(Icons.person)
                     : null,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${player['first_name']} ${player['last_name']}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              _getPositionName(player['position'].toInt()),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                              ),
-                            ),
-                          ],
+                    // Position inside a rounded corner box
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 21, 102, 1)
+                            .withOpacity(0.3),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
                         ),
-                        Row(
-                          children: [
-                            Column(
-                              children: [
-                                const Icon(Icons.sports_soccer,
-                                    color: Colors.grey),
-                                Text(
-                                  '${(player['expected_goals'] ?? 0.0).toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              children: [
-                                const Icon(Icons.assistant, color: Colors.grey),
-                                Text(
-                                  '${(player['expected_assists'] ?? 0.0).toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      ),
+                      child: Text(
+                        _getPositionName(player['position'].toInt()),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
+                    Text(
+                      '${player['first_name']} ${player['last_name']}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: isSelected ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
                     Text(
                       _getTeamName(player['team'].toInt()),
                       style: TextStyle(
@@ -272,14 +289,41 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                         color: isSelected ? Colors.white : Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    if (player['news'] != null && player['news'].isNotEmpty)
-                      Text(
-                        player['news'],
-                        style: const TextStyle(color: Colors.redAccent),
-                      ),
                   ],
                 ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Column(
+                        children: [
+                          const Icon(Icons.sports_soccer, color: Colors.grey),
+                          Text(
+                            '${(player['expected_goals'] ?? 0.0).toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 20),
+                      Column(
+                        children: [
+                          const Icon(Icons.assistant, color: Colors.grey),
+                          Text(
+                            '${(player['expected_assists'] ?? 0.0).toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -288,141 +332,235 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
+// Function to show a dialog when a player with news is selected
+  void _showNewsDialog(Map<String, dynamic> player, bool isSelected) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('${player['first_name']} ${player['last_name']}'),
+          content: Text(player['news']),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _togglePlayerSelection(
+                  (player['id'] is int)
+                      ? player['id']
+                      : (player['id'] as double).toInt(),
+                  (player['position'] is int)
+                      ? player['position']
+                      : (player['position'] as double).toInt(),
+                );
+              },
+              child: const Text('Select Anyway'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Helper widget to build position counters
   // Helper widget to build position counters
   Widget _buildPositionCounters() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return Container(
+      padding: const EdgeInsets.all(6.0),
+      margin: const EdgeInsets.only(
+        top: 10.0,
+        left: 8.0,
+        right: 8.0,
+      ),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 70, 70, 70)
+            .withOpacity(0.5), // Background color
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.white, // Border color for the entire container
+          width: 2.0,
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _positionCounter('DEF', defendersCount, defendersCount >= 3),
-          _positionCounter('MID', midfieldersCount, midfieldersCount >= 7),
-          _positionCounter('ATT', attackersCount, false),
-          _totalCounter(),
+          // Defender Counter
+          Expanded(
+            child: _positionCounter(
+                'DEF', defendersCount, 3, defendersCount >= 3, Colors.green),
+          ),
+          const SizedBox(width: 5), // Small gap between counters
+
+          // Remaining Selections Counter
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 2.0),
+                borderRadius: BorderRadius.circular(5),
+                color: const Color.fromARGB(159, 255, 255, 255),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Remaining:',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 90, 90, 90),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    '${20 - selectedPlayerIds.length}',
+                    style: const TextStyle(
+                      color: Color.fromARGB(255, 0, 0, 0),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 5), // Small gap between counters
+
+          // Midfielder Counter
+          Expanded(
+            child: _positionCounter(
+                'MID', midfieldersCount, 7, midfieldersCount >= 7, Colors.blue),
+          ),
         ],
       ),
     );
   }
 
-  // Helper widget to create position counter
-  Widget _positionCounter(String position, int count, bool highlight) {
+// Helper widget to create position counter
+  Widget _positionCounter(String position, int count, int requiredCount,
+      bool highlight, Color borderColor) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: const EdgeInsets.all(6.0),
       decoration: BoxDecoration(
-        border: Border.all(color: highlight ? Colors.green : Colors.black),
+        border: Border.all(
+            color:
+                highlight ? borderColor : const Color.fromARGB(255, 63, 63, 63),
+            width: 1.5),
         borderRadius: BorderRadius.circular(5),
+        color: const Color.fromARGB(159, 15, 61, 22),
       ),
       child: Column(
         children: [
           Text(
             position,
             style: const TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
           Text(
-            '$count',
-            style: const TextStyle(color: Colors.black),
+            '$count/$requiredCount',
+            style: const TextStyle(
+              color: Color.fromARGB(255, 255, 255, 255),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Helper widget to show the total counter of selected players
-  Widget _totalCounter() {
+  // Build filter widgets for team, position, and sort by goals
+  Widget _buildFilters() {
     return Container(
       padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(5),
+        color: Colors.black.withOpacity(0.5), // Background color for filters
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Column(
-        children: [
-          const Text(
-            'Total',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            '${selectedPlayerIds.length}/20',
-            style: const TextStyle(color: Colors.black),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build filter widgets for team, position, and search bar
-  Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Column(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            // Team Filter Dropdown with title
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text(
+                  "Team",
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
                 DropdownButton<String>(
                   value: selectedTeam,
-                  hint: const Text("Filter by Team"),
+                  hint: const Text("Filter by Team",
+                      style: TextStyle(fontSize: 12)),
                   items: squads.map((String team) {
                     return DropdownMenuItem(
                       value: team,
-                      child: Text(team),
+                      child: Text(team, style: const TextStyle(fontSize: 12)),
                     );
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedTeam = value ?? 'ALL';
-                      _filterPlayers(); // Apply filters
-                    });
-                  },
-                ),
-                DropdownButton<String>(
-                  value: selectedPosition,
-                  hint: const Text("Filter by Position"),
-                  items: const [
-                    DropdownMenuItem(value: "DEF", child: Text("DEF")),
-                    DropdownMenuItem(value: "MID", child: Text("MID")),
-                    DropdownMenuItem(value: "ATT", child: Text("ATT")),
-                    DropdownMenuItem(value: "ALL", child: Text("ALL")),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPosition = value ?? 'ALL';
-                      _filterPlayers(); // Apply filters
+                      _filterPlayers();
                     });
                   },
                 ),
               ],
             ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Column(
+            const SizedBox(width: 20), // Spacing between elements
+
+            // Position Filter Dropdown with title
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  decoration: const InputDecoration(
-                    hintText: 'Search Player',
-                    prefixIcon: Icon(Icons.search),
-                  ),
+                const Text(
+                  "Position",
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
+                DropdownButton<String>(
+                  value: selectedPosition,
+                  hint: const Text("Filter by Position",
+                      style: TextStyle(fontSize: 12)),
+                  items: positions.map((String position) {
+                    return DropdownMenuItem(
+                      value: position,
+                      child:
+                          Text(position, style: const TextStyle(fontSize: 12)),
+                    );
+                  }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      searchQuery = value;
-                      _filterPlayers(); // Apply filters
+                      selectedPosition = value ?? 'ALL';
+                      _filterPlayers();
                     });
                   },
                 ),
+              ],
+            ),
+            const SizedBox(width: 20), // Spacing between elements
+
+            // Sort by xGoals Checkbox with title
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Sort by xGoals",
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
                 Row(
                   children: [
-                    const Text("Sort by xGoals"),
                     Checkbox(
                       value: sortByGoals,
                       onChanged: (value) {
                         setState(() {
                           sortByGoals = value ?? false;
-                          _filterPlayers(); // Apply filters
+                          _filterPlayers();
                         });
                       },
                     ),
@@ -430,9 +568,60 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  // Function to show the overlay for selections
+  void _showSelections() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor:
+          Colors.white.withOpacity(0.9), // Semi-transparent white background
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (_, controller) {
+            return Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const Text(
+                    "Your Selections",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: controller,
+                      itemCount: selectedPlayerIds.length,
+                      itemBuilder: (context, index) {
+                        final playerId = selectedPlayerIds[index];
+                        final player = players
+                            .firstWhere((element) => element['id'] == playerId);
+                        return ListTile(
+                          title: Text(
+                            '${player['first_name']} ${player['last_name']}',
+                          ),
+                          subtitle: Text(
+                            '${_getTeamName(player['team'].toInt())} - ${_getPositionName(player['position'].toInt())}',
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
