@@ -4,7 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MakeSelectionsScreen extends StatefulWidget {
-  const MakeSelectionsScreen({super.key});
+  final String competitionId;
+  final String competitionName;
+  final bool isPrivate;
+  final String? joinCode;
+
+  const MakeSelectionsScreen({
+    super.key,
+    required this.competitionId,
+    required this.competitionName,
+    this.isPrivate = false,
+    this.joinCode,
+  });
 
   @override
   MakeSelectionsScreenState createState() => MakeSelectionsScreenState();
@@ -144,20 +155,24 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar:
-          false, // Ensure app bar is not extended behind the body
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Image.asset(
-          'lib/assets/logo.png', // Update this path based on your actual asset location
-          height: 40, // Adjust the height as needed
+          'lib/assets/logo.png',
+          height: 40,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _showCompetitionInfo,
+          ),
+        ],
       ),
       body: Stack(
         children: [
-          // Background image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -168,15 +183,13 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
           ),
           Column(
             children: [
-              _buildPositionCounters(), // Now it will appear below the app bar
+              _buildPositionCounters(),
               _buildFilters(),
               ElevatedButton(
                 onPressed: _showSelections,
                 child: const Text("View Selections"),
               ),
-              const SizedBox(
-                  height:
-                      5), // Reduce the gap between "View Selections" and the cards
+              const SizedBox(height: 5),
               Expanded(
                 child: ListView.builder(
                   itemCount: filteredPlayers.length,
@@ -191,9 +204,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Handle confirm action
-                    },
+                    onPressed: _confirmSelections,
                     child: const Text("Confirm Selections"),
                   ),
                 ),
@@ -201,6 +212,34 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Function to show competition information
+  void _showCompetitionInfo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(widget.competitionName),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Competition ID: ${widget.competitionId}'),
+              if (widget.isPrivate && widget.joinCode != null)
+                Text('Join Code: ${widget.joinCode}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -332,7 +371,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-// Function to show a dialog when a player with news is selected
+  // Function to show a dialog when a player with news is selected
   void _showNewsDialog(Map<String, dynamic> player, bool isSelected) {
     showDialog(
       context: context,
@@ -367,7 +406,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Helper widget to build position counters
   // Helper widget to build position counters
   Widget _buildPositionCounters() {
     return Container(
@@ -438,7 +476,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-// Helper widget to create position counter
+  // Helper widget to create position counter
   Widget _positionCounter(String position, int count, int requiredCount,
       bool highlight, Color borderColor) {
     return Container(
@@ -479,7 +517,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       padding: const EdgeInsets.all(8.0),
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5), // Background color for filters
+        color: const Color.fromARGB(255, 175, 175, 175)
+            .withOpacity(0.7), // Background color for filters
         borderRadius: BorderRadius.circular(10),
       ),
       child: SingleChildScrollView(
@@ -550,7 +589,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Sort by xGoals",
+                  "Predicted",
                   style: TextStyle(fontSize: 12, color: Colors.white),
                 ),
                 Row(
@@ -620,6 +659,98 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  // Function to confirm selections and insert into the database
+  void _confirmSelections() async {
+    if (selectedPlayerIds.length != 20) {
+      _showErrorDialog('You must select exactly 20 players.');
+      return;
+    }
+
+    if (defendersCount < 3 || midfieldersCount < 7) {
+      _showErrorDialog('You must have at least 3 defenders and 7 midfielders.');
+      return;
+    }
+
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) {
+      _showErrorDialog('User not authenticated.');
+      return;
+    }
+
+    final competitionId = widget.competitionId;
+
+    final List<Map<String, dynamic>> entries =
+        selectedPlayerIds.map((playerId) {
+      final player = players.firstWhere((element) => element['id'] == playerId);
+      return {
+        'competition_id': competitionId,
+        'user_id': user.id,
+        'player_id': playerId,
+        'position': player['position'],
+      };
+    }).toList();
+
+    try {
+      final response = await Supabase.instance.client
+          .from('selections')
+          .insert(entries)
+          .select(); // Use .select() to ensure a non-null response
+
+      // Since response is a List<Map<String, dynamic>>, we check if it's not empty
+      if (response.isNotEmpty) {
+        _showSuccessDialog('Selections confirmed successfully!');
+      } else {
+        _showErrorDialog('Failed to confirm selections. Please try again.');
+      }
+    } catch (error) {
+      _showErrorDialog('An error occurred: $error');
+    }
+  }
+
+  // Function to show error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to show success dialog
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to another screen or refresh the selections
+              },
+              child: const Text('OK'),
+            ),
+          ],
         );
       },
     );
