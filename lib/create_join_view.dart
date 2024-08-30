@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math';
-import 'join_competition_view.dart';
+import 'join_competition_view.dart'; // Import join competition view
 
 class CreateJoinView extends StatefulWidget {
   const CreateJoinView({super.key});
@@ -21,12 +21,14 @@ class CreateJoinViewState extends State<CreateJoinView> {
   bool _isPrivate = false;
   String? _joinCode;
 
+  // Switch between "Create" and "Join" tabs
   void _onTabSelected(int index) {
     setState(() {
       _selectedTabIndex = index;
     });
   }
 
+  // Generates a 7-character alphanumeric join code
   String _generateJoinCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     return String.fromCharCodes(Iterable.generate(7, (_) {
@@ -35,15 +37,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
     }));
   }
 
-  Future<bool> _isCompetitionNameUnique(String name) async {
-    final response = await Supabase.instance.client
-        .from('competitions')
-        .select('id')
-        .eq('competition_name', name);
-
-    return response.isEmpty;
-  }
-
+  // Handles competition creation
   void _createCompetition() async {
     final name = _competitionNameController.text.trim();
     final user = Supabase.instance.client.auth.currentUser;
@@ -55,15 +49,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
       return;
     }
 
-    if (!await _isCompetitionNameUnique(name)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Competition name already exists.')),
-        );
-        return;
-      }
-    }
-
+    // Generate a join code if the competition is private
     if (_isPrivate) {
       _joinCode = _generateJoinCode();
     } else {
@@ -71,6 +57,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
     }
 
     try {
+      // Insert the competition details into the database
       final List<Map<String, dynamic>> competitionResponse =
           await Supabase.instance.client.from('competitions').insert({
         'competition_name': name,
@@ -81,16 +68,20 @@ class CreateJoinViewState extends State<CreateJoinView> {
         'is_complete': false,
       }).select();
 
+      // Check if the competition was created successfully
       if (competitionResponse.isNotEmpty) {
-        final competitionId = competitionResponse.first['id'];
+        final competitionId = competitionResponse.first['id'] as String;
+        final competitionName = competitionResponse.first['competition_name'] as String;
 
+        // Insert the creator into the competition_participants table as the owner
         await Supabase.instance.client.from('competition_participants').insert({
           'competition_id': competitionId,
           'user_id': user.id,
           'is_owner': true,
         });
 
-        _showSuccessPopup(competitionId, name, _joinCode, _isPrivate);
+        // Show success pop-up with join code if private
+        _showSuccessPopup(competitionId, competitionName);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +90,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
         }
       }
     } catch (error, stackTrace) {
+      // Log the error and stack trace for better understanding
       print("Exception: $error");
       print("StackTrace: $stackTrace");
 
@@ -110,8 +102,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
     }
   }
 
-  void _showSuccessPopup(String competitionId, String competitionName,
-      String? joinCode, bool isPrivate) {
+// Displays success popup with the join code if private
+  void _showSuccessPopup(String competitionId, String competitionName) {
     showDialog(
       context: context,
       builder: (context) {
@@ -123,14 +115,14 @@ class CreateJoinViewState extends State<CreateJoinView> {
               const Icon(Icons.check_circle, color: Colors.green, size: 64),
               const SizedBox(height: 16),
               const Text('Your competition has been created.'),
-              if (isPrivate)
+              if (_isPrivate)
                 Column(
                   children: [
-                    Text('Join Code: $joinCode'),
+                    Text('Join Code: $_joinCode'),
                     const SizedBox(height: 16),
                     TextButton.icon(
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: joinCode!));
+                        Clipboard.setData(ClipboardData(text: _joinCode!));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('Join code copied to clipboard')),
@@ -148,7 +140,11 @@ class CreateJoinViewState extends State<CreateJoinView> {
               onPressed: () {
                 Navigator.pop(context);
                 _navigateToCompetitionDetail(
-                    competitionId, competitionName, isPrivate, joinCode);
+                  competitionId,
+                  competitionName,
+                  _isPrivate,
+                  _joinCode,
+                ); // Transition to competition detail view
               },
               child: const Text('OK'),
             ),
@@ -158,8 +154,9 @@ class CreateJoinViewState extends State<CreateJoinView> {
     );
   }
 
-  void _navigateToCompetitionDetail(String competitionId,
-      String competitionName, bool isPrivate, String? joinCode) {
+// Navigates to the competition detail screen after creation
+  void _navigateToCompetitionDetail(
+      String competitionId, String competitionName, bool isPrivate, String? joinCode) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => MakeSelectionsScreen(
@@ -175,7 +172,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: true, // Adjust for keyboard
       body: Column(
         children: [
           Row(
@@ -190,8 +187,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
             child: IndexedStack(
               index: _selectedTabIndex,
               children: [
-                _createView(),
-                _joinView(),
+                _createView(), // Create competition view
+                _joinView(), // Join competition view
               ],
             ),
           ),
@@ -200,6 +197,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
     );
   }
 
+  // Tab button for switching between Create and Join views
   Widget _tabButton(String title, int index) {
     bool isActive = _selectedTabIndex == index;
     return Expanded(
@@ -226,6 +224,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
     );
   }
 
+  // Create competition view
   Widget _createView() {
     return SingleChildScrollView(
       child: Padding(
@@ -286,7 +285,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
     );
   }
 
+  // Join competition view
   Widget _joinView() {
-    return const JoinCompetitionView();
+    return const JoinCompetitionView(); // Link to join view
   }
 }

@@ -161,8 +161,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         elevation: 0,
         centerTitle: true,
         title: Image.asset(
-          'lib/assets/logo.png',
-          height: 40,
+          'lib/assets/logo.png', // Update this path based on your actual asset location
+          height: 40, // Adjust the height as needed
         ),
         actions: [
           IconButton(
@@ -195,7 +195,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                   itemCount: filteredPlayers.length,
                   itemBuilder: (context, index) {
                     final player = filteredPlayers[index];
-                    final isSelected = selectedPlayerIds.contains(player['id']);
+                    final isSelected =
+                        selectedPlayerIds.contains(player['id']);
                     return _buildPlayerCard(player, isSelected);
                   },
                 ),
@@ -371,7 +372,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Function to show a dialog when a player with news is selected
+// Function to show a dialog when a player with news is selected
   void _showNewsDialog(Map<String, dynamic> player, bool isSelected) {
     showDialog(
       context: context,
@@ -476,7 +477,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Helper widget to create position counter
+// Helper widget to create position counter
   Widget _positionCounter(String position, int count, int requiredCount,
       bool highlight, Color borderColor) {
     return Container(
@@ -642,8 +643,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       itemCount: selectedPlayerIds.length,
                       itemBuilder: (context, index) {
                         final playerId = selectedPlayerIds[index];
-                        final player = players
-                            .firstWhere((element) => element['id'] == playerId);
+                        final player = players.firstWhere(
+                            (element) => element['id'] == playerId);
                         return ListTile(
                           title: Text(
                             '${player['first_name']} ${player['last_name']}',
@@ -672,7 +673,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     }
 
     if (defendersCount < 3 || midfieldersCount < 7) {
-      _showErrorDialog('You must have at least 3 defenders and 7 midfielders.');
+      _showErrorDialog(
+          'You must have at least 3 defenders and 7 midfielders.');
       return;
     }
 
@@ -685,8 +687,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
 
     final competitionId = widget.competitionId;
 
-    final List<Map<String, dynamic>> entries =
-        selectedPlayerIds.map((playerId) {
+    final List<Map<String, dynamic>> entries = selectedPlayerIds.map((playerId) {
       final player = players.firstWhere((element) => element['id'] == playerId);
       return {
         'competition_id': competitionId,
@@ -697,20 +698,19 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     }).toList();
 
     try {
-      final response = await Supabase.instance.client
-          .from('selections')
-          .insert(entries)
-          .select(); // Use .select() to ensure a non-null response
+  final response = await Supabase.instance.client
+      .from('selections')
+      .insert(entries);
 
-      // Since response is a List<Map<String, dynamic>>, we check if it's not empty
-      if (response.isNotEmpty) {
-        _showSuccessDialog('Selections confirmed successfully!');
-      } else {
-        _showErrorDialog('Failed to confirm selections. Please try again.');
-      }
-    } catch (error) {
-      _showErrorDialog('An error occurred: $error');
-    }
+  if (response != null && response.error != null) {
+    _showErrorDialog('Failed to confirm selections: ${response.error!.message}');
+  } else {
+    _showSuccessDialog('Selections confirmed successfully!');
+  }
+} catch (error) {
+  _showErrorDialog('An error occurred: $error');
+}
+
   }
 
   // Function to show error dialog
