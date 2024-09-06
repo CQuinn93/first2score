@@ -107,7 +107,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               index: _selectedIndex,
               children: const [
                 CreateJoinView(), // Tab 1: Create/Join Competitions
-                MyCompetitionsView(), // Tab 2: My Competitions
+                MyCompetitionsScreen(), // Tab 2: My Competitions
                 OpenCompetitionsView(), // Tab 3: Open Competitions
               ],
             ),

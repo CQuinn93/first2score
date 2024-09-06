@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:application/make_selections_screen.dart';
+import 'package:application/my_competitions_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -102,72 +103,87 @@ class CreateJoinViewState extends State<CreateJoinView> {
     }
   }
 
-// Displays success popup with the join code if private
-  void _showSuccessPopup(String competitionId, String competitionName) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Success'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 64),
-              const SizedBox(height: 16),
-              const Text('Your competition has been created.'),
-              if (_isPrivate)
-                Column(
-                  children: [
-                    Text('Join Code: $_joinCode'),
-                    const SizedBox(height: 16),
-                    TextButton.icon(
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: _joinCode!));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Join code copied to clipboard')),
-                        );
-                      },
-                      icon: const Icon(Icons.copy),
-                      label: const Text('Copy Join Code'),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _navigateToCompetitionDetail(
-                  competitionId,
-                  competitionName,
-                  _isPrivate,
-                  _joinCode,
-                ); // Transition to competition detail view
-              },
-              child: const Text('OK'),
-            ),
+void _showSuccessPopup(String competitionId, String competitionName) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Success'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            const SizedBox(height: 16),
+            const Text('Your competition has been created.'),
+            if (_isPrivate)
+              Column(
+                children: [
+                  Text('Join Code: $_joinCode'),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: _joinCode!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Join code copied to clipboard')),
+                      );
+                    },
+                    icon: const Icon(Icons.copy),
+                    label: const Text('Copy Join Code'),
+                  ),
+                ],
+              ),
           ],
-        );
-      },
-    );
-  }
-
-// Navigates to the competition detail screen after creation
-  void _navigateToCompetitionDetail(
-      String competitionId, String competitionName, bool isPrivate, String? joinCode) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => MakeSelectionsScreen(
-          competitionId: competitionId,
-          competitionName: competitionName,
-          isPrivate: isPrivate,
-          joinCode: joinCode,
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToCompetitionDetail(
+                competitionId,
+                competitionName,
+                _isPrivate,
+                _joinCode,
+              ); // Transition to competition detail view
+            },
+            child: const Text('Make Selections Now'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToMyCompetitions(); // Navigate to "My Competitions" tab
+            },
+            child: const Text('Make Selections Later'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _navigateToCompetitionDetail(
+    String competitionId, String competitionName, bool isPrivate, String? joinCode) {
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (context) => MakeSelectionsScreen(
+        competitionId: competitionId,
+        competitionName: competitionName,
+        isPrivate: isPrivate,
+        joinCode: joinCode,
       ),
-    );
-  }
+    ),
+  );
+}
+
+void _navigateToMyCompetitions() {
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (context) => const MyCompetitionsScreen(), // Update this with your actual "My Competitions" screen widget
+    ),
+  );
+}
+
+
 
   @override
   Widget build(BuildContext context) {
