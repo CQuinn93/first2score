@@ -15,6 +15,7 @@ class MyCompetitionsScreen extends StatefulWidget {
 class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
   List<Map<String, dynamic>> myCompetitions = [];
   final SupabaseClient supabase = Supabase.instance.client;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -23,6 +24,10 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
   }
 
   Future<void> fetchMyCompetitions() async {
+    setState(() {
+      isLoading = true; // Show loading indicator during fetch
+    });
+
     final user = supabase.auth.currentUser;
     if (kDebugMode) {
       print(user?.id);
@@ -33,44 +38,59 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
       if (kDebugMode) {
         print("User not Logged in");
       }
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
     try {
       // Fetch the competitions the user is a participant in
       final response = await supabase
-    .from('competition_participants')
-    .select('''
-      competition_id,
-      competitions(competition_name)
-    ''')
-    .eq('user_id', user.id);
+          .from('competition_participants')
+          .select('''
+            competition_id,
+            competitions(competition_name)
+          ''')
+          .eq('user_id', user.id);
 
       final competitionList = List<Map<String, dynamic>>.from(response);
 
       // For each competition, check if the user has made selections
       for (var competition in competitionList) {
         final competitionId = competition['competition_id'];
-        
+
         // Check if the user has made selections in this competition
         final selectionsResponse = await supabase
             .from('selections')
-            .select('id')
+            .select('id') // You can also fetch other fields if needed
             .eq('competition_id', competitionId)
             .eq('user_id', user.id);
 
-        competition['hasMadeSelections'] =
-            selectionsResponse.isNotEmpty;
+        // If selections are found, set the `hasMadeSelections` flag to true
+        competition['hasMadeSelections'] = selectionsResponse.isNotEmpty;
       }
+
+      // Sort the competitionList alphabetically by the competition_name
+      competitionList.sort((a, b) {
+        return a['competitions']['competition_name']
+            .toString()
+            .toLowerCase()
+            .compareTo(b['competitions']['competition_name'].toString().toLowerCase());
+      });
 
       setState(() {
         myCompetitions = competitionList;
+        isLoading = false; // Hide loading indicator after fetch
       });
     } catch (error) {
       // Handle error
       if (kDebugMode) {
         print("Error fetching competitions: $error");
       }
+      setState(() {
+        isLoading = false; // Hide loading indicator on error
+      });
     }
   }
 
@@ -80,17 +100,24 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
       appBar: AppBar(
         title: const Text("My Competitions"),
       ),
-      body: myCompetitions.isEmpty
+      body: isLoading
           ? const Center(
-              child: Text("No competitions joined yet."),
+              child: CircularProgressIndicator(), // Show loader while fetching
             )
-          : ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              itemCount: myCompetitions.length,
-              itemBuilder: (context, index) {
-                final competition = myCompetitions[index];
-                return _buildCompetitionCard(competition);
-              },
+          : RefreshIndicator(
+              onRefresh: fetchMyCompetitions, // Add pull-to-refresh functionality
+              child: myCompetitions.isEmpty
+                  ? const Center(
+                      child: Text("No competitions joined yet."),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: myCompetitions.length,
+                      itemBuilder: (context, index) {
+                        final competition = myCompetitions[index];
+                        return _buildCompetitionCard(competition);
+                      },
+                    ),
             ),
     );
   }

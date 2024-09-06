@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'package:application/dashboard_screen.dart';
 import 'package:application/make_selections_screen.dart';
-import 'package:application/my_competitions_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -108,17 +108,22 @@ void _showSuccessPopup(String competitionId, String competitionName) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Success'),
+        title: const Center(
+          child: Text('Success'),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 64),
             const SizedBox(height: 16),
-            const Text('Your competition has been created.'),
+            const Text(
+              'Your competition has been created.',
+              textAlign: TextAlign.center,
+            ),
             if (_isPrivate)
               Column(
                 children: [
-                  Text('Join Code: $_joinCode'),
+                  Text('Join Code: $_joinCode', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   TextButton.icon(
                     onPressed: () {
@@ -131,35 +136,78 @@ void _showSuccessPopup(String competitionId, String competitionName) {
                     icon: const Icon(Icons.copy),
                     label: const Text('Copy Join Code'),
                   ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Make selections now?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
           ],
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 20),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _navigateToCompetitionDetail(
-                competitionId,
-                competitionName,
-                _isPrivate,
-                _joinCode,
-              ); // Transition to competition detail view
-            },
-            child: const Text('Make Selections Now'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _navigateToMyCompetitions(); // Navigate to "My Competitions" tab
-            },
-            child: const Text('Make Selections Later'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Let's Go Button
+              SizedBox(
+                width: 120, // Set a fixed width for both buttons
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _navigateToCompetitionDetail(
+                      competitionId,
+                      competitionName,
+                      _isPrivate,
+                      _joinCode,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32), // Same green color
+                  ),
+                  child: const Text(
+                    'Let\'s Go',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // White text color
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              // Later Button
+              SizedBox(
+                width: 120, // Set the same width for both buttons
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _navigateToMyCompetitions();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32), // Same green color
+                  ),
+                  child: const Text(
+                    'Later',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // White text color
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       );
     },
   );
 }
+
+
+
+
 
 void _navigateToCompetitionDetail(
     String competitionId, String competitionName, bool isPrivate, String? joinCode) {
@@ -178,7 +226,7 @@ void _navigateToCompetitionDetail(
 void _navigateToMyCompetitions() {
   Navigator.of(context).pushReplacement(
     MaterialPageRoute(
-      builder: (context) => const MyCompetitionsScreen(), // Update this with your actual "My Competitions" screen widget
+      builder: (context) => const DashboardScreen(), // Update this with your actual "My Competitions" screen widget
     ),
   );
 }
