@@ -105,7 +105,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'User Selections',
+                  'User Selections',4
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
