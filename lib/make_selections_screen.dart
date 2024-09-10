@@ -233,7 +233,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 ),
             ],
           ),
-        ),
       ],
     ),
   );
