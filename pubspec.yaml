@@ -62,7 +62,6 @@ flutter:
     - lib/assets/small_logo.png
     - lib/assets/background.jpg
     - lib/assets/backdrop.jpg
-    - lib/assets/option1.webp
   
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

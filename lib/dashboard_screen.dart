@@ -1,9 +1,9 @@
-import 'package:application/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'create_join_view.dart'; // Import your CreateJoinView
 import 'open_competitions_view.dart'; // Import OpenCompetitionsView
 import 'my_competitions_view.dart'; // Import your MyCompetitionsView
+import 'login_screen.dart'; // Import the LoginScreen for logout
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -58,23 +58,27 @@ class DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Set the background color to black
+      backgroundColor: Colors.black,
+
+      // Transparent AppBar with updated logo
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
+          icon: const Icon(Icons.menu, color: Colors.white),
           onPressed: () {
             // Handle drawer action
           },
         ),
         title: Image.asset(
-          'lib/assets/logo.png',
+          'lib/assets/F2ScoreGreen.png', // Updated logo
           height: 40,
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _logout,
           ),
         ],
@@ -87,7 +91,7 @@ class DashboardScreenState extends State<DashboardScreen> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1C6E47),
+              color: Colors.white, // White text for dark background
             ),
           ),
           const SizedBox(height: 20),
@@ -117,6 +121,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Updated menu button to use green color scheme
   Widget _menuButton(String title, int index) {
     bool isActive = _selectedIndex == index;
     return Padding(
@@ -129,16 +134,21 @@ class DashboardScreenState extends State<DashboardScreen> {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF1C6E47) : Colors.white,
+            color: isActive
+                ? const Color.fromARGB(255, 22, 107, 30)
+                : Colors.transparent, // Green background for active
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFF1C6E47)),
+            border: Border.all(
+                color: const Color(0xFF1C6E47)), // Green border color
           ),
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
           child: Text(
             title,
             style: TextStyle(
               fontSize: 16,
-              color: isActive ? Colors.white : const Color(0xFF1C6E47),
+              color: isActive
+                  ? Colors.white
+                  : const Color(0xFF1C6E47), // Green text for inactive buttons
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
           ),

@@ -32,14 +32,14 @@ List<String> squads = [
   "Crystal Palace",
   "Everton",
   "Fulham",
-  "Burnley",
-  "Luton Town",
+  "Ipswich Town",
+  "Leicester",
   "Liverpool",
   "Manchester City",
   "Manchester United",
   "Newcastle United",
   "Nottingham Forest",
-  "Sheffield United",
+  "Southampton",
   "Tottenham Hotspur",
   "West Ham United",
   "Wolves"
@@ -152,40 +152,59 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     return squads[teamId];
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    extendBodyBehindAppBar: true, // Extend the body behind the AppBar
-    appBar: AppBar(
-      backgroundColor: Colors.transparent, // Make the AppBar transparent
-      elevation: 0, // Remove AppBar shadow
-      centerTitle: true,
-      title: Image.asset(
-        'lib/assets/logo.png', // Update this path based on your actual asset location
-        height: 40, // Adjust the height as needed
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.info_outline),
-          onPressed: _showCompetitionInfo,
+  Map<String, String> teamImageMap = {
+    "Arsenal": "lib/assets/Arsenal.png",
+    "Aston Villa": "lib/assets/Aston Villa.png",
+    "Bournemouth": "lib/assets/Bournemouth.png",
+    "Brentford": "lib/assets/Brentford.png",
+    "Brighton": "lib/assets/Brighton.png",
+    "Chelsea": "lib/assets/Chelsea.png",
+    "Crystal Palace": "lib/assets/Crystal Palace.png",
+    "Everton": "lib/assets/Everton.png",
+    "Fulham": "lib/assets/Fulham.png",
+    "Ipswich Town": "lib/assets/Ipswich Town.png",
+    "Leicester": "lib/assets/Leicester.png",
+    "Liverpool": "lib/assets/Liverpool.png",
+    "Manchester City": "lib/assets/Manchester City.png",
+    "Manchester United": "lib/assets/Manchester United.png",
+    "Newcastle United": "lib/assets/Newcastle.png",
+    "Nottingham Forest": "lib/assets/Notts Forest.png",
+    "Tottenham Hotspur": "lib/assets/Tottenham.png",
+    "Southampton": "lib/assets/Southampton.png",
+    "West Ham United": "lib/assets/West Ham.png",
+    "Wolves": "lib/assets/Wolves.png",
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // Set the background of the entire Scaffold to black
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+
+      // Make the AppBar transparent
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0, // Remove shadow/elevation
+        centerTitle: true,
+        title: Image.asset(
+          'lib/assets/LogoBlue.png', // Update this path based on your actual asset location
+          height: 60, // Adjust the height as needed
         ),
-      ],
-    ),
-    body: Stack(
-      children: [
-        // Background Image
-        Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('lib/assets/option1.webp'), // Your background image
-              fit: BoxFit.cover, // Cover the entire screen
-            ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _showCompetitionInfo,
           ),
-        ),
-        // Add padding to ensure content doesn't overlap with the AppBar
-        Padding(
-          padding: const EdgeInsets.only(top: kToolbarHeight + 20.0), // Adjust the top padding to account for AppBar height
-          child: Column(
+        ],
+      ),
+      body: Stack(
+        children: [
+          // No need for backdrop image; setting the entire background to black
+          Container(
+            color: const Color.fromARGB(
+                255, 0, 0, 0), // Ensures the background is black
+          ),
+          Column(
             children: [
               _buildPositionCounters(),
               _buildFilters(),
@@ -199,8 +218,7 @@ Widget build(BuildContext context) {
                   itemCount: filteredPlayers.length,
                   itemBuilder: (context, index) {
                     final player = filteredPlayers[index];
-                    final isSelected =
-                        selectedPlayerIds.contains(player['id']);
+                    final isSelected = selectedPlayerIds.contains(player['id']);
                     return _buildPlayerCard(player, isSelected);
                   },
                 ),
@@ -253,6 +271,8 @@ Widget build(BuildContext context) {
   // Build player card widget
   Widget _buildPlayerCard(Map<String, dynamic> player, bool isSelected) {
     final bool hasNews = player['news'] != null && player['news'].isNotEmpty;
+    final String teamName = _getTeamName(player['team'].toInt());
+    final String? teamImage = teamImageMap[teamName];
 
     return GestureDetector(
       onTap: () {
@@ -271,12 +291,13 @@ Widget build(BuildContext context) {
       },
       child: Card(
         color: isSelected
-            ? const Color(0xFF1C6E47).withOpacity(0.7)
-            : Colors.white.withOpacity(0.7),
+            ? const Color.fromARGB(255, 0, 173, 196).withOpacity(0.7)
+            : const Color.fromARGB(255, 70, 70, 70).withOpacity(0.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: hasNews
-              ? const BorderSide(color: Colors.redAccent, width: 2.0)
+              ? const BorderSide(
+                  color: Color.fromARGB(255, 255, 0, 0), width: 2.0)
               : BorderSide.none,
         ),
         margin: const EdgeInsets.all(8),
@@ -285,12 +306,26 @@ Widget build(BuildContext context) {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(player['profile_pic_url'] ?? ''),
-                backgroundColor: Colors.grey[200],
+                backgroundImage: teamImage != null
+                    ? AssetImage(teamImage)
+                    : const AssetImage('lib/assets/default_jersey.png'),
+                backgroundColor: Colors.transparent,
                 radius: 20,
-                child: player['profile_pic_url'] == null
-                    ? const Icon(Icons.person)
-                    : null,
+                child: ClipPath(
+                  // Clip the image in a circular shape
+                  child: teamImage != null
+                      ? Image.asset(
+                          teamImage,
+                          fit: BoxFit
+                              .cover, // Makes the image cover the circle properly
+                          width:
+                              40, // Adjust this as per your needs to fit the avatar
+                          height:
+                              40, // Adjust this as per your needs to fit the avatar
+                        )
+                      : const Icon(Icons.person,
+                          size: 30), // If no image, show icon
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -302,7 +337,7 @@ Widget build(BuildContext context) {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 21, 102, 1)
+                        color: const Color.fromARGB(255, 0, 81, 255)
                             .withOpacity(0.3),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
@@ -324,17 +359,12 @@ Widget build(BuildContext context) {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: isSelected ? Colors.white : Colors.black,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color.fromARGB(255, 255, 255, 255),
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(
-                      _getTeamName(player['team'].toInt()),
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -346,11 +376,14 @@ Widget build(BuildContext context) {
                     children: [
                       Column(
                         children: [
-                          const Icon(Icons.sports_soccer, color: Colors.grey),
+                          const Icon(Icons.sports_soccer,
+                              color: Color.fromARGB(255, 255, 255, 255)),
                           Text(
                             '${(player['expected_goals'] ?? 0.0).toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color.fromARGB(255, 255, 255, 255),
                             ),
                           ),
                         ],
@@ -358,11 +391,12 @@ Widget build(BuildContext context) {
                       const SizedBox(width: 20),
                       Column(
                         children: [
-                          const Icon(Icons.assistant, color: Colors.grey),
+                          const Icon(Icons.assistant,
+                              color: Color.fromARGB(255, 255, 255, 255)),
                           Text(
                             '${(player['expected_assists'] ?? 0.0).toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected ? Colors.white : Colors.white,
                             ),
                           ),
                         ],
@@ -435,8 +469,8 @@ Widget build(BuildContext context) {
         children: [
           // Defender Counter
           Expanded(
-            child: _positionCounter(
-                'DEF', defendersCount, 3, defendersCount >= 3, Colors.green),
+            child: _positionCounter('DEF', defendersCount, 3,
+                defendersCount >= 3, const Color.fromARGB(255, 5, 6, 104)),
           ),
           const SizedBox(width: 5), // Small gap between counters
 
@@ -494,7 +528,7 @@ Widget build(BuildContext context) {
                 highlight ? borderColor : const Color.fromARGB(255, 63, 63, 63),
             width: 1.5),
         borderRadius: BorderRadius.circular(5),
-        color: const Color.fromARGB(159, 15, 61, 22),
+        color: const Color.fromARGB(159, 33, 66, 175),
       ),
       child: Column(
         children: [
@@ -649,8 +683,8 @@ Widget build(BuildContext context) {
                       itemCount: selectedPlayerIds.length,
                       itemBuilder: (context, index) {
                         final playerId = selectedPlayerIds[index];
-                        final player = players.firstWhere(
-                            (element) => element['id'] == playerId);
+                        final player = players
+                            .firstWhere((element) => element['id'] == playerId);
                         return ListTile(
                           title: Text(
                             '${player['first_name']} ${player['last_name']}',
@@ -679,8 +713,7 @@ Widget build(BuildContext context) {
     }
 
     if (defendersCount < 3 || midfieldersCount < 7) {
-      _showErrorDialog(
-          'You must have at least 3 defenders and 7 midfielders.');
+      _showErrorDialog('You must have at least 3 defenders and 7 midfielders.');
       return;
     }
 
@@ -693,7 +726,8 @@ Widget build(BuildContext context) {
 
     final competitionId = widget.competitionId;
 
-    final List<Map<String, dynamic>> entries = selectedPlayerIds.map((playerId) {
+    final List<Map<String, dynamic>> entries =
+        selectedPlayerIds.map((playerId) {
       final player = players.firstWhere((element) => element['id'] == playerId);
       return {
         'competition_id': competitionId,
@@ -704,19 +738,18 @@ Widget build(BuildContext context) {
     }).toList();
 
     try {
-  final response = await Supabase.instance.client
-      .from('selections')
-      .insert(entries);
+      final response =
+          await Supabase.instance.client.from('selections').insert(entries);
 
-  if (response != null && response.error != null) {
-    _showErrorDialog('Failed to confirm selections: ${response.error!.message}');
-  } else {
-    _showSuccessDialog('Selections confirmed successfully!');
-  }
-} catch (error) {
-  _showErrorDialog('An error occurred: $error');
-}
-
+      if (response != null && response.error != null) {
+        _showErrorDialog(
+            'Failed to confirm selections: ${response.error!.message}');
+      } else {
+        _showSuccessDialog('Selections confirmed successfully!');
+      }
+    } catch (error) {
+      _showErrorDialog('An error occurred: $error');
+    }
   }
 
   // Function to show error dialog
