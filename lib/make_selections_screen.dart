@@ -152,36 +152,40 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     return squads[teamId];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: false,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Image.asset(
-          'lib/assets/logo.png', // Update this path based on your actual asset location
-          height: 40, // Adjust the height as needed
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: _showCompetitionInfo,
-          ),
-        ],
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBodyBehindAppBar: true, // Extend the body behind the AppBar
+    appBar: AppBar(
+      backgroundColor: Colors.transparent, // Make the AppBar transparent
+      elevation: 0, // Remove AppBar shadow
+      centerTitle: true,
+      title: Image.asset(
+        'lib/assets/logo.png', // Update this path based on your actual asset location
+        height: 40, // Adjust the height as needed
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/assets/background.jpg'),
-                fit: BoxFit.cover,
-              ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.info_outline),
+          onPressed: _showCompetitionInfo,
+        ),
+      ],
+    ),
+    body: Stack(
+      children: [
+        // Background Image
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('lib/assets/option1.webp'), // Your background image
+              fit: BoxFit.cover, // Cover the entire screen
             ),
           ),
-          Column(
+        ),
+        // Add padding to ensure content doesn't overlap with the AppBar
+        Padding(
+          padding: const EdgeInsets.only(top: kToolbarHeight + 20.0), // Adjust the top padding to account for AppBar height
+          child: Column(
             children: [
               _buildPositionCounters(),
               _buildFilters(),
@@ -211,10 +215,12 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 ),
             ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   // Function to show competition information
   void _showCompetitionInfo() {
@@ -266,7 +272,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       child: Card(
         color: isSelected
             ? const Color(0xFF1C6E47).withOpacity(0.7)
-            : Colors.white.withOpacity(0.5),
+            : Colors.white.withOpacity(0.7),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: hasNews
