@@ -82,6 +82,12 @@ flutter:
     - lib/assets/Tottenham.png
     - lib/assets/West Ham.png
     - lib/assets/Wolves.png
+    - lib/assets/LogoBlue.png
+    - lib/assets/F2ScoreBlue.png
+    - lib/assets/leaderboard_icon.png
+    - lib/assets/make_selections_icon.png
+    - lib/assets/transfers_icon.png
+    - lib/assets/F2ScoreGreen.png
 
   
   # The following line ensures that the Material Icons font is

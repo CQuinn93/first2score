@@ -178,14 +178,17 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: false,
+      // Set the background of the entire Scaffold to black
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+
+      // Make the AppBar transparent
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0,
+        elevation: 0, // Remove shadow/elevation
         centerTitle: true,
         title: Image.asset(
-          'lib/assets/logo.png', // Update this path based on your actual asset location
-          height: 40, // Adjust the height as needed
+          'lib/assets/LogoBlue.png', // Update this path based on your actual asset location
+          height: 60, // Adjust the height as needed
         ),
         actions: [
           IconButton(
@@ -196,13 +199,10 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       ),
       body: Stack(
         children: [
+          // No need for backdrop image; setting the entire background to black
           Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/assets/backdrop.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
+            color: const Color.fromARGB(
+                255, 0, 0, 0), // Ensures the background is black
           ),
           Column(
             children: [
@@ -289,8 +289,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       },
       child: Card(
         color: isSelected
-            ? const Color(0xFF1C6E47).withOpacity(0.7)
-            : Colors.white.withOpacity(0.5),
+            ? const Color.fromARGB(255, 0, 173, 196).withOpacity(0.7)
+            : const Color.fromARGB(255, 70, 70, 70).withOpacity(0.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: hasNews
@@ -357,7 +357,9 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: isSelected ? Colors.white : Colors.black,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color.fromARGB(255, 255, 255, 255),
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -372,11 +374,14 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                     children: [
                       Column(
                         children: [
-                          const Icon(Icons.sports_soccer, color: Colors.grey),
+                          const Icon(Icons.sports_soccer,
+                              color: Color.fromARGB(255, 255, 255, 255)),
                           Text(
                             '${(player['expected_goals'] ?? 0.0).toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color.fromARGB(255, 255, 255, 255),
                             ),
                           ),
                         ],
@@ -384,11 +389,12 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       const SizedBox(width: 20),
                       Column(
                         children: [
-                          const Icon(Icons.assistant, color: Colors.grey),
+                          const Icon(Icons.assistant,
+                              color: Color.fromARGB(255, 255, 255, 255)),
                           Text(
                             '${(player['expected_assists'] ?? 0.0).toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected ? Colors.white : Colors.white,
                             ),
                           ),
                         ],
@@ -461,8 +467,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         children: [
           // Defender Counter
           Expanded(
-            child: _positionCounter(
-                'DEF', defendersCount, 3, defendersCount >= 3, Colors.green),
+            child: _positionCounter('DEF', defendersCount, 3,
+                defendersCount >= 3, const Color.fromARGB(255, 5, 6, 104)),
           ),
           const SizedBox(width: 5), // Small gap between counters
 
@@ -520,7 +526,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 highlight ? borderColor : const Color.fromARGB(255, 63, 63, 63),
             width: 1.5),
         borderRadius: BorderRadius.circular(5),
-        color: const Color.fromARGB(159, 15, 61, 22),
+        color: const Color.fromARGB(159, 33, 66, 175),
       ),
       child: Column(
         children: [

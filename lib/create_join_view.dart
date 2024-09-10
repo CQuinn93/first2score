@@ -1,12 +1,12 @@
-// ignore_for_file: avoid_print
+import 'dart:math';
 
 import 'package:application/dashboard_screen.dart';
+import 'package:application/join_competition_view.dart';
 import 'package:application/make_selections_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:math';
-import 'join_competition_view.dart'; // Import join competition view
 
 class CreateJoinView extends StatefulWidget {
   const CreateJoinView({super.key});
@@ -72,7 +72,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
       // Check if the competition was created successfully
       if (competitionResponse.isNotEmpty) {
         final competitionId = competitionResponse.first['id'] as String;
-        final competitionName = competitionResponse.first['competition_name'] as String;
+        final competitionName =
+            competitionResponse.first['competition_name'] as String;
 
         // Insert the creator into the competition_participants table as the owner
         await Supabase.instance.client.from('competition_participants').insert({
@@ -92,8 +93,12 @@ class CreateJoinViewState extends State<CreateJoinView> {
       }
     } catch (error, stackTrace) {
       // Log the error and stack trace for better understanding
-      print("Exception: $error");
-      print("StackTrace: $stackTrace");
+      if (kDebugMode) {
+        print("Exception: $error");
+      }
+      if (kDebugMode) {
+        print("StackTrace: $stackTrace");
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,140 +108,142 @@ class CreateJoinViewState extends State<CreateJoinView> {
     }
   }
 
-void _showSuccessPopup(String competitionId, String competitionName) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Center(
-          child: Text('Success'),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 64),
-            const SizedBox(height: 16),
-            const Text(
-              'Your competition has been created.',
-              textAlign: TextAlign.center,
-            ),
-            if (_isPrivate)
-              Column(
-                children: [
-                  Text('Join Code: $_joinCode', textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: _joinCode!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Join code copied to clipboard')),
-                      );
-                    },
-                    icon: const Icon(Icons.copy),
-                    label: const Text('Copy Join Code'),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Make selections now?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-          ],
-        ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 20),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  void _showSuccessPopup(String competitionId, String competitionName) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.black, // Dark background for the dialog
+          title: const Center(
+            child: Text('Success',
+                style: TextStyle(color: Colors.white)), // White text
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Let's Go Button
-              SizedBox(
-                width: 120, // Set a fixed width for both buttons
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _navigateToCompetitionDetail(
-                      competitionId,
-                      competitionName,
-                      _isPrivate,
-                      _joinCode,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32), // Same green color
-                  ),
-                  child: const Text(
-                    'Let\'s Go',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // White text color
-                    ),
-                  ),
-                ),
+              const Icon(Icons.check_circle, color: Colors.green, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Your competition has been created.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white), // White text
               ),
-              const SizedBox(width: 20),
-              // Later Button
-              SizedBox(
-                width: 120, // Set the same width for both buttons
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _navigateToMyCompetitions();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32), // Same green color
-                  ),
-                  child: const Text(
-                    'Later',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // White text color
+              if (_isPrivate)
+                Column(
+                  children: [
+                    Text('Join Code: $_joinCode',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white)),
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: _joinCode!));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Join code copied to clipboard')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy,
+                          color: Colors.green), // Green icon
+                      label: const Text('Copy Join Code',
+                          style: TextStyle(color: Colors.green)), // Green text
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Make selections now?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white), // White bold text
+                    ),
+                  ],
                 ),
-              ),
             ],
           ),
-        ],
-      );
-    },
-  );
-}
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 20),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  width: 120, // Set a fixed width for both buttons
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _navigateToCompetitionDetail(
+                        competitionId,
+                        competitionName,
+                        _isPrivate,
+                        _joinCode,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1C6E47), // Green button
+                    ),
+                    child: const Text(
+                      'Let\'s Go',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // White text color
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                SizedBox(
+                  width: 120, // Set the same width for both buttons
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _navigateToMyCompetitions();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1C6E47), // Green button
+                    ),
+                    child: const Text(
+                      'Later',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // White text color
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-
-
-
-
-void _navigateToCompetitionDetail(
-    String competitionId, String competitionName, bool isPrivate, String? joinCode) {
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(
-      builder: (context) => MakeSelectionsScreen(
-        competitionId: competitionId,
-        competitionName: competitionName,
-        isPrivate: isPrivate,
-        joinCode: joinCode,
+  void _navigateToCompetitionDetail(String competitionId,
+      String competitionName, bool isPrivate, String? joinCode) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => MakeSelectionsScreen(
+          competitionId: competitionId,
+          competitionName: competitionName,
+          isPrivate: isPrivate,
+          joinCode: joinCode,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-void _navigateToMyCompetitions() {
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(
-      builder: (context) => const DashboardScreen(), // Update this with your actual "My Competitions" screen widget
-    ),
-  );
-}
-
-
+  void _navigateToMyCompetitions() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const DashboardScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true, // Adjust for keyboard
+      backgroundColor: Colors.black, // Dark theme background
       body: Column(
         children: [
           Row(
@@ -298,19 +305,35 @@ void _navigateToMyCompetitions() {
           children: [
             const Text(
               'Create a Competition',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _competitionNameController,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: Colors.white), // White text color
+              decoration: InputDecoration(
                 labelText: 'Competition Name',
-                border: OutlineInputBorder(),
+                labelStyle:
+                    const TextStyle(color: Colors.grey), // Grey label text
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide:
+                      const BorderSide(color: Colors.white), // White border
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: Color(0xFF1C6E47)), // Green border when focused
+                ),
               ),
             ),
             const SizedBox(height: 20),
             DropdownButton<int>(
               value: _selectedGameWeek,
+              dropdownColor: Colors.black, // Dropdown background color
+              style: const TextStyle(color: Colors.white), // White text
               items: List.generate(10, (index) {
                 return DropdownMenuItem(
                   value: index + 1,
@@ -322,12 +345,13 @@ void _navigateToMyCompetitions() {
                   _selectedGameWeek = value;
                 });
               },
-              hint: const Text('Select Game Week'),
+              hint: const Text('Select Game Week',
+                  style: TextStyle(color: Colors.grey)),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
-                const Text('Private'),
+                const Text('Private', style: TextStyle(color: Colors.white)),
                 Switch(
                   value: _isPrivate,
                   onChanged: (value) {
@@ -335,13 +359,18 @@ void _navigateToMyCompetitions() {
                       _isPrivate = value;
                     });
                   },
+                  activeColor: const Color(0xFF1C6E47), // Green switch
                 ),
               ],
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createCompetition,
-              child: const Text('Create Competition'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1C6E47), // Green button
+              ),
+              child: const Text('Create Competition',
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

@@ -15,6 +15,10 @@ class LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false; // Loading state
+  final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
+  final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
+  final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
+  final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
 
   Future<void> login() async {
     setState(() {
@@ -65,7 +69,7 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set background color to white
+      backgroundColor: themeBackgroundColour, // Set background color to black
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -74,7 +78,7 @@ class LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60), // Add top padding
               Image.asset(
-                'lib/assets/logo.png', // Logo image
+                'lib/assets/F2ScoreGreen.png', // Use dark theme logo here
                 height: 60,
               ),
               const SizedBox(height: 40),
@@ -83,18 +87,24 @@ class LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1C6E47),
+                  color: Colors.white, // White color for dark theme
                   fontFamily: 'Ethnocentric', // Use custom font here
                 ),
               ),
               const SizedBox(height: 30),
               TextField(
                 controller: emailController,
+                style: const TextStyle(color: Colors.white), // White text color
                 decoration: InputDecoration(
                   labelText: 'Email',
+                  labelStyle: const TextStyle(color: Colors.grey), // Grey label
                   hintText: 'Enter your email',
+                  hintStyle:
+                      const TextStyle(color: Colors.grey), // Grey hint text
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                        const BorderSide(color: Colors.white), // White border
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
@@ -106,11 +116,17 @@ class LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               TextField(
                 controller: passwordController,
+                style: const TextStyle(color: Colors.white), // White text color
                 decoration: InputDecoration(
                   labelText: 'Password',
+                  labelStyle: const TextStyle(color: Colors.grey), // Grey label
                   hintText: 'Enter your password',
+                  hintStyle:
+                      const TextStyle(color: Colors.grey), // Grey hint text
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                        const BorderSide(color: Colors.white), // White border
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
@@ -118,7 +134,9 @@ class LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   suffixIcon: const Icon(
-                      Icons.visibility_off), // Eye icon for password visibility
+                    Icons.visibility_off,
+                    color: Colors.grey, // Grey color for icon
+                  ),
                 ),
                 obscureText: true,
               ),
@@ -131,9 +149,14 @@ class LoginScreenState extends State<LoginScreen> {
                       Checkbox(
                         value: true, // Static value for now
                         onChanged: (bool? value) {},
-                        activeColor: const Color(0xFF1C6E47), // Green color
+                        activeColor: const Color.fromARGB(
+                            255, 0, 165, 30), // Green color
+                        checkColor: Colors.white, // White checkmark
                       ),
-                      const Text('Remember me'),
+                      const Text(
+                        'Remember me',
+                        style: TextStyle(color: Colors.white), // White text
+                      ),
                     ],
                   ),
                   TextButton(
@@ -146,7 +169,7 @@ class LoginScreenState extends State<LoginScreen> {
                     },
                     child: const Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.grey), // Grey color
+                      style: TextStyle(color: Colors.grey), // Grey text
                     ),
                   ),
                 ],
@@ -157,8 +180,8 @@ class LoginScreenState extends State<LoginScreen> {
                     isLoading ? null : login, // Disable button if loading
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
-                      const Color.fromARGB(255, 20, 75, 20), // Green color
-                  foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      const Color.fromARGB(255, 5, 85, 15), // Green button
+                  foregroundColor: Colors.white, // White text
                   padding: const EdgeInsets.symmetric(
                     horizontal: 100,
                     vertical: 15,
@@ -167,18 +190,26 @@ class LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  'LOG IN',
-                  style: TextStyle(fontSize: 15, fontFamily: "Ethnocentric"),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white, // Loader color
+                      )
+                    : const Text(
+                        'LOG IN',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontFamily: "Ethnocentric",
+                        ),
+                      ),
               ),
-              const SizedBox(height: 20),
-              const SizedBox(height: 20),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account? "),
+                  const Text(
+                    "Don't have an account? ",
+                    style: TextStyle(color: Colors.white), // White text
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).push(
@@ -190,7 +221,7 @@ class LoginScreenState extends State<LoginScreen> {
                     child: const Text(
                       'Sign up',
                       style: TextStyle(
-                        color: Color(0xFF1C6E47), // Green color
+                        color: Color(0xFF1C6E47), // Green text
                         fontWeight: FontWeight.bold,
                       ),
                     ),
