@@ -62,6 +62,27 @@ flutter:
     - lib/assets/small_logo.png
     - lib/assets/background.jpg
     - lib/assets/backdrop.jpg
+    - lib/assets/Arsenal.png
+    - lib/assets/Aston Villa.png
+    - lib/assets/Bournemouth.png
+    - lib/assets/Brentford.png
+    - lib/assets/Brighton.png
+    - lib/assets/Chelsea.png
+    - lib/assets/Crystal Palace.png
+    - lib/assets/Everton.png
+    - lib/assets/Fulham.png
+    - lib/assets/Ipswich Town.png
+    - lib/assets/Leicester.png
+    - lib/assets/Liverpool.png
+    - lib/assets/Manchester City.png
+    - lib/assets/Manchester United.png
+    - lib/assets/Newcastle.png
+    - lib/assets/Notts Forest.png
+    - lib/assets/Southampton.png
+    - lib/assets/Tottenham.png
+    - lib/assets/West Ham.png
+    - lib/assets/Wolves.png
+
   
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

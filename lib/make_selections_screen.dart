@@ -32,14 +32,14 @@ List<String> squads = [
   "Crystal Palace",
   "Everton",
   "Fulham",
-  "Burnley",
-  "Luton Town",
+  "Ipswich Town",
+  "Leicester",
   "Liverpool",
   "Manchester City",
   "Manchester United",
   "Newcastle United",
   "Nottingham Forest",
-  "Sheffield United",
+  "Southampton",
   "Tottenham Hotspur",
   "West Ham United",
   "Wolves"
@@ -152,6 +152,29 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     return squads[teamId];
   }
 
+  Map<String, String> teamImageMap = {
+    "Arsenal": "lib/assets/Arsenal.png",
+    "Aston Villa": "lib/assets/Aston Villa.png",
+    "Bournemouth": "lib/assets/Bournemouth.png",
+    "Brentford": "lib/assets/Brentford.png",
+    "Brighton": "lib/assets/Brighton.png",
+    "Chelsea": "lib/assets/Chelsea.png",
+    "Crystal Palace": "lib/assets/Crystal Palace.png",
+    "Everton": "lib/assets/Everton.png",
+    "Fulham": "lib/assets/Fulham.png",
+    "Ipswich Town": "lib/assets/Ipswich Town.png",
+    "Leicester": "lib/assets/Leicester.png",
+    "Liverpool": "lib/assets/Liverpool.png",
+    "Manchester City": "lib/assets/Manchester City.png",
+    "Manchester United": "lib/assets/Manchester United.png",
+    "Newcastle United": "lib/assets/Newcastle.png",
+    "Nottingham Forest": "lib/assets/Notts Forest.png",
+    "Tottenham Hotspur": "lib/assets/Tottenham.png",
+    "Southampton": "lib/assets/Southampton.png",
+    "West Ham United": "lib/assets/West Ham.png",
+    "Wolves": "lib/assets/Wolves.png",
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,7 +199,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('lib/assets/background.jpg'),
+                image: AssetImage('lib/assets/backdrop.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -195,8 +218,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                   itemCount: filteredPlayers.length,
                   itemBuilder: (context, index) {
                     final player = filteredPlayers[index];
-                    final isSelected =
-                        selectedPlayerIds.contains(player['id']);
+                    final isSelected = selectedPlayerIds.contains(player['id']);
                     return _buildPlayerCard(player, isSelected);
                   },
                 ),
@@ -247,6 +269,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   // Build player card widget
   Widget _buildPlayerCard(Map<String, dynamic> player, bool isSelected) {
     final bool hasNews = player['news'] != null && player['news'].isNotEmpty;
+    final String teamName = _getTeamName(player['team'].toInt());
+    final String? teamImage = teamImageMap[teamName];
 
     return GestureDetector(
       onTap: () {
@@ -270,7 +294,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: hasNews
-              ? const BorderSide(color: Colors.redAccent, width: 2.0)
+              ? const BorderSide(
+                  color: Color.fromARGB(255, 255, 0, 0), width: 2.0)
               : BorderSide.none,
         ),
         margin: const EdgeInsets.all(8),
@@ -279,12 +304,26 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(player['profile_pic_url'] ?? ''),
-                backgroundColor: Colors.grey[200],
+                backgroundImage: teamImage != null
+                    ? AssetImage(teamImage)
+                    : const AssetImage('lib/assets/default_jersey.png'),
+                backgroundColor: Colors.transparent,
                 radius: 20,
-                child: player['profile_pic_url'] == null
-                    ? const Icon(Icons.person)
-                    : null,
+                child: ClipPath(
+                  // Clip the image in a circular shape
+                  child: teamImage != null
+                      ? Image.asset(
+                          teamImage,
+                          fit: BoxFit
+                              .cover, // Makes the image cover the circle properly
+                          width:
+                              40, // Adjust this as per your needs to fit the avatar
+                          height:
+                              40, // Adjust this as per your needs to fit the avatar
+                        )
+                      : const Icon(Icons.person,
+                          size: 30), // If no image, show icon
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -296,7 +335,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 21, 102, 1)
+                        color: const Color.fromARGB(255, 0, 81, 255)
                             .withOpacity(0.3),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
@@ -322,13 +361,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(
-                      _getTeamName(player['team'].toInt()),
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -643,8 +675,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       itemCount: selectedPlayerIds.length,
                       itemBuilder: (context, index) {
                         final playerId = selectedPlayerIds[index];
-                        final player = players.firstWhere(
-                            (element) => element['id'] == playerId);
+                        final player = players
+                            .firstWhere((element) => element['id'] == playerId);
                         return ListTile(
                           title: Text(
                             '${player['first_name']} ${player['last_name']}',
@@ -673,8 +705,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     }
 
     if (defendersCount < 3 || midfieldersCount < 7) {
-      _showErrorDialog(
-          'You must have at least 3 defenders and 7 midfielders.');
+      _showErrorDialog('You must have at least 3 defenders and 7 midfielders.');
       return;
     }
 
@@ -687,7 +718,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
 
     final competitionId = widget.competitionId;
 
-    final List<Map<String, dynamic>> entries = selectedPlayerIds.map((playerId) {
+    final List<Map<String, dynamic>> entries =
+        selectedPlayerIds.map((playerId) {
       final player = players.firstWhere((element) => element['id'] == playerId);
       return {
         'competition_id': competitionId,
@@ -698,19 +730,18 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     }).toList();
 
     try {
-  final response = await Supabase.instance.client
-      .from('selections')
-      .insert(entries);
+      final response =
+          await Supabase.instance.client.from('selections').insert(entries);
 
-  if (response != null && response.error != null) {
-    _showErrorDialog('Failed to confirm selections: ${response.error!.message}');
-  } else {
-    _showSuccessDialog('Selections confirmed successfully!');
-  }
-} catch (error) {
-  _showErrorDialog('An error occurred: $error');
-}
-
+      if (response != null && response.error != null) {
+        _showErrorDialog(
+            'Failed to confirm selections: ${response.error!.message}');
+      } else {
+        _showSuccessDialog('Selections confirmed successfully!');
+      }
+    } catch (error) {
+      _showErrorDialog('An error occurred: $error');
+    }
   }
 
   // Function to show error dialog
