@@ -45,6 +45,12 @@ List<String> squads = [
   "Wolves"
 ];
 
+const themeMainColour = Color.fromARGB(255, 0, 165, 30);
+const themeSecondaryColour = Color.fromARGB(255, 10, 65, 20);
+const themeBackgroundColour = Color.fromARGB(255, 0, 0, 0);
+const themeTextColour = Color.fromARGB(255, 255, 255, 255);
+const themeTertiarytColour = Color.fromARGB(255, 110, 110, 110);
+
 List<String> positions = ["ALL", "Defender", "Midfielder", "Striker"];
 
 class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
@@ -58,6 +64,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   List<Map<String, dynamic>> filteredPlayers = [];
   String searchQuery = '';
   bool sortByGoals = false;
+  String selectedFilter = "team";
 
   @override
   void initState() {
@@ -179,7 +186,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Set the background of the entire Scaffold to black
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      backgroundColor: themeBackgroundColour,
 
       // Make the AppBar transparent
       appBar: AppBar(
@@ -187,7 +194,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         elevation: 0, // Remove shadow/elevation
         centerTitle: true,
         title: Image.asset(
-          'lib/assets/LogoBlue.png', // Update this path based on your actual asset location
+          'lib/assets/F2ScoreGreen.png', // Update this path based on your actual asset location
           height: 60, // Adjust the height as needed
         ),
         actions: [
@@ -201,12 +208,12 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         children: [
           // No need for backdrop image; setting the entire background to black
           Container(
-            color: const Color.fromARGB(
-                255, 0, 0, 0), // Ensures the background is black
+            color: themeBackgroundColour, // Ensures the background is black
           ),
           Column(
             children: [
               _buildPositionCounters(),
+              const SizedBox(height: 10),
               _buildFilters(),
               ElevatedButton(
                 onPressed: _showSelections,
@@ -233,11 +240,10 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 ),
             ],
           ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   // Function to show competition information
   void _showCompetitionInfo() {
@@ -290,8 +296,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       },
       child: Card(
         color: isSelected
-            ? const Color.fromARGB(255, 0, 173, 196).withOpacity(0.7)
-            : const Color.fromARGB(255, 70, 70, 70).withOpacity(0.5),
+            ? themeMainColour
+            : themeSecondaryColour.withOpacity(0.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: hasNews
@@ -336,8 +342,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 0, 81, 255)
-                            .withOpacity(0.3),
+                        color: themeSecondaryColour.withOpacity(0.3),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10),
@@ -456,8 +461,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         right: 8.0,
       ),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 70, 70, 70)
-            .withOpacity(0.5), // Background color
+        color: themeTertiarytColour.withOpacity(0.5), // Background color
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.white, // Border color for the entire container
@@ -468,8 +472,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         children: [
           // Defender Counter
           Expanded(
-            child: _positionCounter('DEF', defendersCount, 3,
-                defendersCount >= 3, const Color.fromARGB(255, 5, 6, 104)),
+            child: _positionCounter(
+                'DEF', defendersCount, 3, defendersCount >= 3, themeMainColour),
           ),
           const SizedBox(width: 5), // Small gap between counters
 
@@ -480,14 +484,14 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 2.0),
                 borderRadius: BorderRadius.circular(5),
-                color: const Color.fromARGB(159, 255, 255, 255),
+                color: themeSecondaryColour,
               ),
               child: Column(
                 children: [
                   const Text(
                     'Remaining:',
                     style: TextStyle(
-                      color: Color.fromARGB(255, 90, 90, 90),
+                      color: themeTextColour,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -495,9 +499,9 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                   Text(
                     '${20 - selectedPlayerIds.length}',
                     style: const TextStyle(
-                      color: Color.fromARGB(255, 0, 0, 0),
+                      color: themeTextColour,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 17,
                     ),
                   ),
                 ],
@@ -523,11 +527,9 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       padding: const EdgeInsets.all(6.0),
       decoration: BoxDecoration(
         border: Border.all(
-            color:
-                highlight ? borderColor : const Color.fromARGB(255, 63, 63, 63),
-            width: 1.5),
+            color: highlight ? borderColor : themeMainColour, width: 1.5),
         borderRadius: BorderRadius.circular(5),
-        color: const Color.fromARGB(159, 33, 66, 175),
+        color: themeSecondaryColour,
       ),
       child: Column(
         children: [
@@ -551,105 +553,233 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Build filter widgets for team, position, and sort by goals
+// Build filter widgets for team and position
   Widget _buildFilters() {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 175, 175, 175)
-            .withOpacity(0.7), // Background color for filters
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
+    return Column(
+      children: [
+        // Toggle between Team and Position filters
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Team Filter Dropdown with title
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Team",
-                  style: TextStyle(fontSize: 12, color: Colors.white),
-                ),
-                DropdownButton<String>(
-                  value: selectedTeam,
-                  hint: const Text("Filter by Team",
-                      style: TextStyle(fontSize: 12)),
-                  items: squads.map((String team) {
-                    return DropdownMenuItem(
-                      value: team,
-                      child: Text(team, style: const TextStyle(fontSize: 12)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedTeam = value ?? 'ALL';
-                      _filterPlayers();
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(width: 20), // Spacing between elements
+            _filterToggleButton("Team", selectedFilter == "Team", () {
+              setState(() {
+                selectedFilter = "Team";
+              });
+            }),
+            _filterToggleButton("Position", selectedFilter == "Position", () {
+              setState(() {
+                selectedFilter = "Position";
+              });
+            }),
+          ],
+        ),
+        const SizedBox(
+            height: 16), // Space between the toggle buttons and filter
 
-            // Position Filter Dropdown with title
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Position",
-                  style: TextStyle(fontSize: 12, color: Colors.white),
-                ),
-                DropdownButton<String>(
-                  value: selectedPosition,
-                  hint: const Text("Filter by Position",
-                      style: TextStyle(fontSize: 12)),
-                  items: positions.map((String position) {
-                    return DropdownMenuItem(
-                      value: position,
-                      child:
-                          Text(position, style: const TextStyle(fontSize: 12)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPosition = value ?? 'ALL';
-                      _filterPlayers();
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(width: 20), // Spacing between elements
+        // Show team jerseys or position buttons based on the selected filter
+        selectedFilter == "Team" ? _buildTeamIcons() : _buildPositionButtons(),
 
-            // Sort by xGoals Checkbox with title
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Predicted",
-                  style: TextStyle(fontSize: 12, color: Colors.white),
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: sortByGoals,
-                      onChanged: (value) {
-                        setState(() {
-                          sortByGoals = value ?? false;
-                          _filterPlayers();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
+        // Sort by Predicted Goals checkbox
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Sort by Predicted Goals",
+              style: TextStyle(fontSize: 14, color: Colors.white),
+            ),
+            Checkbox(
+              value: sortByGoals,
+              onChanged: (value) {
+                setState(() {
+                  sortByGoals = value ?? false;
+                  _filterPlayers(); // Apply filter when checkbox is toggled
+                });
+              },
             ),
           ],
         ),
+      ],
+    );
+  }
+
+// Toggle button for switching between Team and Position filters
+  Widget _filterToggleButton(
+      String title, bool isSelected, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? themeMainColour : themeSecondaryColour,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            title,
+            style: TextStyle(
+              color: isSelected ? themeTextColour : Colors.grey,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
       ),
+    );
+  }
+
+// Build the team jerseys row with team names underneath
+  Widget _buildTeamIcons() {
+    return SizedBox(
+      height: 80, // Adjust the height as needed for smaller icons
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal, // Horizontally scrollable row
+        itemCount: teamImageMap.length + 1, // +1 to include "All Players"
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            // "All Players" football icon
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedTeam = "ALL"; // Show all players when clicked
+                  _filterPlayers(); // Apply the filter
+                });
+              },
+              child: Column(
+                children: [
+                  // Football Icon
+                  Container(
+                    width: 40, // Smaller square icon
+                    height: 40,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: selectedTeam == "ALL"
+                            ? themeMainColour
+                            : Colors.transparent,
+                        width: 2, // Highlight when selected
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.transparent, // Transparent background
+                    ),
+                    child: const Icon(
+                      Icons.sports_soccer, // Football icon
+                      color: Colors.white,
+                      size: 24, // Adjust the size of the football icon
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // "All Players" label
+                  SizedBox(
+                    width: 50, // Set the width for text wrapping
+                    child: Text(
+                      "All Players",
+                      style: TextStyle(
+                        fontSize: 7, // Smaller font size
+                        color: selectedTeam == "ALL"
+                            ? themeMainColour // Highlight when selected
+                            : Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2, // Allow text to wrap to two lines if needed
+                      overflow: TextOverflow.ellipsis, // Truncate if too long
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Display team jerseys and names for the rest of the teams
+          String teamName =
+              teamImageMap.keys.elementAt(index - 1); // Adjust for 0-index
+          String teamImage = teamImageMap[teamName]!;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedTeam = teamName; // Filter by selected team
+                _filterPlayers(); // Apply the filter
+              });
+            },
+            child: Column(
+              children: [
+                // Team Jersey Icon
+                Container(
+                  width: 40, // Smaller square icon
+                  height: 40,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: selectedTeam == teamName
+                          ? themeMainColour
+                          : Colors.transparent,
+                      width: 2, // Highlight selected team
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.transparent, // Transparent background
+                  ),
+                  child: Image.asset(
+                    teamImage,
+                    fit: BoxFit.contain, // Contain within the square
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // Team Name with wrapping text
+                SizedBox(
+                  width: 50, // Set the width for text wrapping
+                  child: Text(
+                    teamName,
+                    style: TextStyle(
+                      fontSize: 7, // Smaller font size
+                      color: selectedTeam == teamName
+                          ? themeMainColour // Highlight selected team
+                          : Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2, // Allow text to wrap to two lines if needed
+                    overflow: TextOverflow.ellipsis, // Truncate if too long
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+// Build the position buttons (All, Defender, Midfielder, Striker)
+  Widget _buildPositionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: positions.map((position) {
+        return ElevatedButton(
+          onPressed: () {
+            setState(() {
+              selectedPosition = position; // Filter by position
+              _filterPlayers(); // Apply the filter
+            });
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: selectedPosition == position
+                ? themeMainColour
+                : themeSecondaryColour,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          ),
+          child: Text(
+            position,
+            style: TextStyle(
+              color:
+                  selectedPosition == position ? themeTextColour : Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

@@ -50,9 +50,13 @@ class CreateJoinViewState extends State<CreateJoinView> {
     final name = _competitionNameController.text.trim();
     final user = Supabase.instance.client.auth.currentUser;
 
-    if (name.isEmpty || _selectedGameWeek == null || user == null || !_agreedToTerms) {
+    if (name.isEmpty ||
+        _selectedGameWeek == null ||
+        user == null ||
+        !_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields and accept the terms.')),
+        const SnackBar(
+            content: Text('Please fill all fields and accept the terms.')),
       );
       return;
     }
@@ -153,7 +157,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
                       icon: const Icon(Icons.copy,
                           color: Colors.green), // Green icon
                       label: Text('Copy Join Code',
-                          style: TextStyle(color: themeMainColour)), // Green text
+                          style:
+                              TextStyle(color: themeMainColour)), // Green text
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -226,7 +231,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
 
   void _navigateToCompetitionDetail(String competitionId,
       String competitionName, String competitionType, String? joinCode) {
-    Navigator.of(context).pushReplacement(
+    // Use push instead of pushReplacement to retain the back button functionality
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => MakeSelectionsScreen(
           competitionId: competitionId,
@@ -239,6 +245,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
   }
 
   void _navigateToMyCompetitions() {
+    // Keep pushReplacement here for navigating to the dashboard
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => const DashboardScreen(),
@@ -284,7 +291,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
         child: Container(
           height: 50,
           decoration: BoxDecoration(
-            color: isActive ? themeMainColour : themeTextColour,
+            color: isActive ? themeSecondaryColour : themeTextColour,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: themeMainColour),
           ),
@@ -323,10 +330,12 @@ class CreateJoinViewState extends State<CreateJoinView> {
               style: TextStyle(color: themeTextColour), // White text color
               decoration: InputDecoration(
                 labelText: 'Competition Name',
-                labelStyle: TextStyle(color: themeHintTextColour), // Grey label text
+                labelStyle:
+                    TextStyle(color: themeHintTextColour), // Grey label text
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: themeTextColour), // White border
+                  borderSide:
+                      BorderSide(color: themeTextColour), // White border
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
@@ -380,7 +389,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
             Column(
               children: [
                 ListTile(
-                  title: const Text('Open', style: TextStyle(color: Colors.white)),
+                  title:
+                      const Text('Open', style: TextStyle(color: Colors.white)),
                   leading: Radio(
                     value: 'open',
                     groupValue: _competitionType,
@@ -393,7 +403,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
                   ),
                 ),
                 ListTile(
-                  title: const Text('Join via Code', style: TextStyle(color: Colors.white)),
+                  title: const Text('Join via Code',
+                      style: TextStyle(color: Colors.white)),
                   leading: Radio(
                     value: 'code',
                     groupValue: _competitionType,
@@ -406,7 +417,8 @@ class CreateJoinViewState extends State<CreateJoinView> {
                   ),
                 ),
                 ListTile(
-                  title: const Text('Private', style: TextStyle(color: Colors.white)),
+                  title: const Text('Private',
+                      style: TextStyle(color: Colors.white)),
                   leading: Radio(
                     value: 'private',
                     groupValue: _competitionType,
@@ -444,7 +456,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
                       _agreedToTerms = value ?? false;
                     });
                   },
-                  activeColor: themeMainColour,
+                  activeColor: themeSecondaryColour,
                   checkColor: themeTextColour,
                 ),
                 Expanded(

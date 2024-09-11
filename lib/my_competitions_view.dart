@@ -2,8 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'make_selections_screen.dart'; // Import the selections screen
-// Assuming you have a leaderboard screen
-import 'leaderboard_screen.dart';
+import 'leaderboard_screen.dart'; // Import the leaderboard screen
 
 class MyCompetitionsScreen extends StatefulWidget {
   const MyCompetitionsScreen({super.key});
@@ -13,6 +12,14 @@ class MyCompetitionsScreen extends StatefulWidget {
 }
 
 class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
+  // Theme colors
+  final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
+  final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
+  final themeTertiaryColour = const Color.fromARGB(255, 0, 55, 15);
+  final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
+  final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
+  final themeHintTextColour = const Color.fromARGB(255, 150, 150, 150);
+
   List<Map<String, dynamic>> myCompetitions = [];
   final SupabaseClient supabase = Supabase.instance.client;
   bool isLoading = false;
@@ -96,24 +103,23 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background color to black
-      backgroundColor: Colors.black,
+      backgroundColor: themeBackgroundColour, // Dark theme background
 
       body: isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                color: Color.fromARGB(255, 0, 173, 196), // Custom loader color
-              ), // Show loader while fetching
+                color: themeMainColour, // Use theme main color for the loader
+              ),
             )
           : RefreshIndicator(
-              onRefresh:
-                  fetchMyCompetitions, // Add pull-to-refresh functionality
+              onRefresh: fetchMyCompetitions,
+              color: themeMainColour,
               child: myCompetitions.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "No competitions joined yet.",
                         style: TextStyle(
-                          color: Colors.white, // White text for readability
+                          color: themeTextColour, // Use theme text color
                           fontSize: 16,
                         ),
                       ),
@@ -136,111 +142,123 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
     final hasMadeSelections = competition['hasMadeSelections'] ?? false;
 
     return Card(
-      color: const Color.fromARGB(
-          255, 70, 70, 70), // Match card background with theme
+      color: themeTertiaryColour, // Use theme secondary color for the card
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: themeMainColour, width: 1), // Add green border
       ),
       child: Padding(
-        padding:
-            const EdgeInsets.all(12.0), // Padding for content inside the card
+        padding: const EdgeInsets.all(12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center, // Center the column
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Competition Logo (Image)
             Image.asset(
-              'lib/assets/F2ScoreBlue.png', // Replace with your actual image path
-              width: 150, // Adjust the width as needed
+              'lib/assets/F2ScoreGreen.png', // Replace with your actual image path
+              width: 150,
             ),
-            const SizedBox(height: 12), // Spacing between logo and row
+            const SizedBox(height: 12),
 
             // Row for competition name and buttons
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween, // Space out the row
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Left: Competition name column with title and name
+                // Left: Competition name
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Underlined "Competition Name"
                     const Text(
                       'Competition Name',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        decoration:
-                            TextDecoration.underline, // Underline the title
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
-                    const SizedBox(
-                        height: 4), // Small spacing between title and name
-
-                    // Actual competition name
+                    const SizedBox(height: 4),
                     Text(
                       competitionName,
                       style: const TextStyle(
-                        color: Colors.white, // White text for competition name
+                        color: Colors.white,
+                        fontWeight:
+                            FontWeight.bold, // White text for competition name
                         fontSize: 16,
                       ),
                     ),
                   ],
                 ),
 
-                // Right: Two buttons with images/icons
+                // Right: Two buttons with icons and labels
                 Row(
                   children: [
                     // First button (Make Selections / Transfers)
-                    ElevatedButton(
-                      onPressed: () {
-                        if (hasMadeSelections) {
-                          _navigateToTransfers(competitionId);
-                        } else {
-                          _navigateToMakeSelections(
-                              competitionId, competitionName);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.all(12), // Adjust padding for icon
-                        minimumSize:
-                            const Size(50, 50), // Set a fixed size for buttons
-                        backgroundColor: hasMadeSelections
-                            ? const Color.fromARGB(
-                                255, 0, 81, 255) // Transfers button color
-                            : const Color.fromARGB(255, 0, 173,
-                                196), // Make selections button color
-                      ),
-                      child: Image.asset(
-                        hasMadeSelections
-                            ? 'lib/assets/transfers_icon.png' // Use your own icon for transfers
-                            : 'lib/assets/make_selections_icon.png', // Use your own icon for make selections
-                        height: 24,
-                        width: 24,
-                      ),
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (hasMadeSelections) {
+                              _navigateToTransfers(competitionId);
+                            } else {
+                              _navigateToMakeSelections(
+                                  competitionId, competitionName);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(6), // Smaller padding
+                            minimumSize: const Size(40, 40), // Smaller size
+                            backgroundColor: hasMadeSelections
+                                ? themeMainColour // Transfers button color
+                                : themeTextColour, // Make selections button color
+                          ),
+                          child: Image.asset(
+                            hasMadeSelections
+                                ? 'lib/assets/transfers_icon.png'
+                                : 'lib/assets/make_selections_icon.png',
+                            height: 20,
+                            width: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          hasMadeSelections ? 'Transfers' : 'Selections',
+                          style: const TextStyle(
+                            color: Colors.white, // White text
+                            fontSize: 8,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8), // Spacing between the buttons
+                    const SizedBox(width: 8),
 
                     // Second button (Leaderboard)
-                    ElevatedButton(
-                      onPressed: () {
-                        _navigateToLeaderboard(competitionId);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.all(12), // Adjust padding for icon
-                        minimumSize:
-                            const Size(50, 50), // Set a fixed size for buttons
-                        backgroundColor: const Color.fromARGB(
-                            255, 255, 255, 255), // Leaderboard button color
-                      ),
-                      child: Image.asset(
-                        'lib/assets/leaderboard_icon.png', // Use your own leaderboard icon
-                        height: 24,
-                        width: 24,
-                      ),
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            _navigateToLeaderboard(competitionId);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(6), // Smaller padding
+                            minimumSize: const Size(40, 40), // Smaller size
+                            backgroundColor:
+                                themeTextColour, // Leaderboard button color
+                          ),
+                          child: Image.asset(
+                            'lib/assets/leaderboard_icon.png', // Use your leaderboard icon
+                            height: 20,
+                            width: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Leaderboard',
+                          style: TextStyle(
+                            color: Colors.white, // White text
+                            fontSize: 8,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
