@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+SUPABASE_KEY = os.getenv('SUPABASE_ANON_KEY')
 TABLE_NAME = "footballers"
 
 
@@ -81,6 +81,7 @@ def read_and_update_db(csv_file_path):
         'Authorization': f'Bearer {SUPABASE_KEY}',
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
+        
     }
 
     # Debug: Print the JSON data being sent
