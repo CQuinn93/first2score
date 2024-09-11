@@ -16,6 +16,12 @@ class DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   String? username;
 
+  // Theme colors
+  final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
+  final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
+  final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
+  final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
+
   @override
   void initState() {
     super.initState();
@@ -58,15 +64,15 @@ class DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background color to black
-      backgroundColor: Colors.black,
+      // Set the background color using the theme
+      backgroundColor: themeBackgroundColour,
 
       // Transparent AppBar with updated logo
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
+          icon: Icon(Icons.menu, color: themeTextColour),
           onPressed: () {
             // Handle drawer action
           },
@@ -78,7 +84,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: Icon(Icons.logout, color: themeTextColour),
             onPressed: _logout,
           ),
         ],
@@ -88,10 +94,10 @@ class DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 20),
           Text(
             'Welcome, ${username ?? 'User'}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white, // White text for dark background
+              color: themeTextColour, // White text for dark background
             ),
           ),
           const SizedBox(height: 20),
@@ -121,7 +127,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Updated menu button to use green color scheme
+  // Updated menu button to use theme colors
   Widget _menuButton(String title, int index) {
     bool isActive = _selectedIndex == index;
     return Padding(
@@ -135,11 +141,11 @@ class DashboardScreenState extends State<DashboardScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: isActive
-                ? const Color.fromARGB(255, 22, 107, 30)
-                : Colors.transparent, // Green background for active
+                ? themeSecondaryColour // Green background for active
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-                color: const Color(0xFF1C6E47)), // Green border color
+                color: themeMainColour), // Green border color
           ),
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
           child: Text(
@@ -147,8 +153,8 @@ class DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(
               fontSize: 16,
               color: isActive
-                  ? Colors.white
-                  : const Color(0xFF1C6E47), // Green text for inactive buttons
+                  ? themeTextColour // White text for active buttons
+                  : themeMainColour, // Green text for inactive buttons
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
           ),
