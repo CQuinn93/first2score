@@ -206,7 +206,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   void _showSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
-      duration: const Duration(seconds: 2), // Duration for 2 seconds
+      duration: const Duration(seconds: 1), // Duration for 1 seconds
       behavior: SnackBarBehavior.floating, // Float above the bottom
       backgroundColor: themeMainColour, // Optional, to match your theme
     );
