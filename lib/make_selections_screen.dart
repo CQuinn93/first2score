@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:application/leaderboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,6 +59,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   int midfieldersCount = 0;
   int attackersCount = 0;
   List<int> selectedPlayerIds = [];
+  List<int> watchlistPlayerIds = []; // Watchlist player IDs
   String selectedTeam = 'ALL';
   String selectedPosition = 'ALL'; // Updated to match names
   List<Map<String, dynamic>> players = [];
@@ -65,6 +67,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   String searchQuery = '';
   bool sortByGoals = false;
   String selectedFilter = "team";
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -117,27 +120,98 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   }
 
   // Function to add/remove a player from the team
+  // Function to add/remove a player from the team
   void _togglePlayerSelection(int playerId, int positionId) {
     setState(() {
+      // Check if the player is already selected
       if (selectedPlayerIds.contains(playerId)) {
+        // Remove the player from selections
         selectedPlayerIds.remove(playerId);
         _updatePositionCounter(positionId, remove: true);
       } else {
-        selectedPlayerIds.add(playerId);
-        _updatePositionCounter(positionId);
+        // Check if the maximum number of players (20) is already selected
+        if (selectedPlayerIds.length >= 20) {
+          // Add to watchlist instead and show a pop-up
+          if (!watchlistPlayerIds.contains(playerId)) {
+            _toggleWatchlist(playerId);
+            _showPlayerLimitReachedDialog(); // Show the pop-up dialog
+          }
+        } else {
+          // Add the player to selections if under the limit
+          selectedPlayerIds.add(playerId);
+          _updatePositionCounter(positionId);
+        }
       }
     });
+  }
+
+// Function to show a dialog when the player limit is reached
+  void _showPlayerLimitReachedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Selection Limit Reached'),
+          content: const Text(
+              'You have reached your 20-player limit. The current selection has been added to your watchlist. Please remove players from your selections in order to add more.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Helper function to update the position counters
   void _updatePositionCounter(int positionId, {bool remove = false}) {
     if (positionId == 2) {
-      defendersCount += remove ? -1 : 1;
+      if (remove && defendersCount > 0) {
+        defendersCount--;
+      } else if (!remove) {
+        defendersCount++;
+      }
     } else if (positionId == 3) {
-      midfieldersCount += remove ? -1 : 1;
+      if (remove && midfieldersCount > 0) {
+        midfieldersCount--;
+      } else if (!remove) {
+        midfieldersCount++;
+      }
     } else if (positionId == 4) {
-      attackersCount += remove ? -1 : 1;
+      if (remove && attackersCount > 0) {
+        attackersCount--;
+      } else if (!remove) {
+        attackersCount++;
+      }
     }
+  }
+
+  void _toggleWatchlist(int playerId) {
+    setState(() {
+      if (watchlistPlayerIds.contains(playerId)) {
+        watchlistPlayerIds.remove(playerId);
+        _showSnackBar('Removed from watchlist');
+      } else {
+        watchlistPlayerIds.add(playerId);
+        _showSnackBar('Added to watchlist');
+      }
+    });
+  }
+
+// Function to display the SnackBar
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 2), // Duration for 2 seconds
+      behavior: SnackBarBehavior.floating, // Float above the bottom
+      backgroundColor: themeMainColour, // Optional, to match your theme
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   // Map position number to position name
@@ -185,17 +259,15 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background of the entire Scaffold to black
+      key: scaffoldKey,
       backgroundColor: themeBackgroundColour,
-
-      // Make the AppBar transparent
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0, // Remove shadow/elevation
+        elevation: 0,
         centerTitle: true,
         title: Image.asset(
-          'lib/assets/F2ScoreGreen.png', // Update this path based on your actual asset location
-          height: 60, // Adjust the height as needed
+          'lib/assets/F2ScoreGreen.png',
+          height: 60,
         ),
         actions: [
           IconButton(
@@ -204,20 +276,31 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
           ),
         ],
       ),
+      endDrawer: _buildWatchlistDrawer(), // Watchlist drawer
       body: Stack(
         children: [
-          // No need for backdrop image; setting the entire background to black
           Container(
-            color: themeBackgroundColour, // Ensures the background is black
+            color: themeBackgroundColour,
           ),
           Column(
             children: [
               _buildPositionCounters(),
               const SizedBox(height: 10),
               _buildFilters(),
-              ElevatedButton(
-                onPressed: _showSelections,
-                child: const Text("View Selections"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _showSelections,
+                    child: const Text("View Selections"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      scaffoldKey.currentState?.openEndDrawer(); // Open drawer
+                    },
+                    child: const Text("Watchlist"),
+                  ),
+                ],
               ),
               const SizedBox(height: 5),
               Expanded(
@@ -226,7 +309,9 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                   itemBuilder: (context, index) {
                     final player = filteredPlayers[index];
                     final isSelected = selectedPlayerIds.contains(player['id']);
-                    return _buildPlayerCard(player, isSelected);
+                    final isOnWatchlist =
+                        watchlistPlayerIds.contains(player['id']);
+                    return _buildPlayerCard(player, isSelected, isOnWatchlist);
                   },
                 ),
               ),
@@ -241,6 +326,88 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Watchlist drawer implementation
+  Widget _buildWatchlistDrawer() {
+    return Drawer(
+      backgroundColor: themeBackgroundColour,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Watchlist',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: themeTextColour,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: watchlistPlayerIds.length,
+                itemBuilder: (context, index) {
+                  final playerId = watchlistPlayerIds[index];
+                  final player = players
+                      .firstWhere((element) => element['id'] == playerId);
+                  final isSelected = selectedPlayerIds.contains(playerId);
+
+                  // Fetch the team name and position name
+                  final String teamName = _getTeamName(player['team'].toInt());
+                  final String positionName =
+                      _getPositionName(player['position'].toInt());
+
+                  return ListTile(
+                    title: Text(
+                      '${player['first_name']} ${player['last_name']}',
+                      style: const TextStyle(color: themeTextColour),
+                    ),
+                    // Add subtitle with team and position
+                    subtitle: Text(
+                      '$teamName - $positionName',
+                      style: const TextStyle(
+                        color: Colors.grey, // Make it smaller and lighter
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.check, color: Colors.green),
+                          onPressed: isSelected
+                              ? null
+                              : () {
+                                  _togglePlayerSelection(
+                                    (player['id'] is int)
+                                        ? player['id']
+                                        : (player['id'] as double).toInt(),
+                                    (player['position'] is int)
+                                        ? player['position']
+                                        : (player['position'] as double)
+                                            .toInt(),
+                                  );
+                                },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _toggleWatchlist(playerId);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -273,8 +440,10 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Build player card widget
-  Widget _buildPlayerCard(Map<String, dynamic> player, bool isSelected) {
+  // Build player card widget with watchlist feature
+  // Build player card widget with watchlist feature
+  Widget _buildPlayerCard(
+      Map<String, dynamic> player, bool isSelected, bool isOnWatchlist) {
     final bool hasNews = player['news'] != null && player['news'].isNotEmpty;
     final String teamName = _getTeamName(player['team'].toInt());
     final String? teamImage = teamImageMap[teamName];
@@ -292,7 +461,18 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                 ? player['position']
                 : (player['position'] as double).toInt(),
           );
+
+          // Add to watchlist when selecting a player
+          _toggleWatchlist((player['id'] is int)
+              ? player['id']
+              : (player['id'] as double).toInt());
         }
+      },
+      onLongPress: () {
+        // Add or remove from watchlist on long press
+        _toggleWatchlist((player['id'] is int)
+            ? player['id']
+            : (player['id'] as double).toInt());
       },
       child: Card(
         color: isSelected
@@ -316,21 +496,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                     : const AssetImage('lib/assets/default_jersey.png'),
                 backgroundColor: Colors.transparent,
                 radius: 20,
-                child: ClipPath(
-                  // Clip the image in a circular shape
-                  child: teamImage != null
-                      ? Image.asset(
-                          teamImage,
-                          fit: BoxFit
-                              .cover, // Makes the image cover the circle properly
-                          width:
-                              40, // Adjust this as per your needs to fit the avatar
-                          height:
-                              40, // Adjust this as per your needs to fit the avatar
-                        )
-                      : const Icon(Icons.person,
-                          size: 30), // If no image, show icon
-                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -791,9 +956,8 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
       backgroundColor:
           Colors.white.withOpacity(0.9), // Semi-transparent white background
       builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          builder: (_, controller) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
             return Container(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -808,7 +972,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                   const SizedBox(height: 10),
                   Expanded(
                     child: ListView.builder(
-                      controller: controller,
                       itemCount: selectedPlayerIds.length,
                       itemBuilder: (context, index) {
                         final playerId = selectedPlayerIds[index];
@@ -820,6 +983,23 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
                           ),
                           subtitle: Text(
                             '${_getTeamName(player['team'].toInt())} - ${_getPositionName(player['position'].toInt())}',
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              // Remove player from selections and refresh the modal UI
+                              setState(() {
+                                _togglePlayerSelection(
+                                  (player['id'] is int)
+                                      ? player['id']
+                                      : (player['id'] as double).toInt(),
+                                  (player['position'] is int)
+                                      ? player['position']
+                                      : (player['position'] as double).toInt(),
+                                );
+                              });
+                              setModalState(() {});
+                            },
                           ),
                         );
                       },
@@ -835,12 +1015,15 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   }
 
   // Function to confirm selections and insert into the database
+  // Function to confirm selections and insert into the database
   void _confirmSelections() async {
+    // Ensure the user has selected exactly 20 players
     if (selectedPlayerIds.length != 20) {
       _showErrorDialog('You must select exactly 20 players.');
       return;
     }
 
+    // Ensure the user has at least 3 defenders and 7 midfielders
     if (defendersCount < 3 || midfieldersCount < 7) {
       _showErrorDialog('You must have at least 3 defenders and 7 midfielders.');
       return;
@@ -855,21 +1038,39 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
 
     final competitionId = widget.competitionId;
 
-    final List<Map<String, dynamic>> entries =
-        selectedPlayerIds.map((playerId) {
-      final player = players.firstWhere((element) => element['id'] == playerId);
-      return {
-        'competition_id': competitionId,
-        'user_id': user.id,
-        'player_id': playerId,
-        'position': player['position'],
-      };
-    }).toList();
-
     try {
+      // Check if the user has already made selections for this competition
+      final existingSelections = await Supabase.instance.client
+          .from('selections')
+          .select('id') // You can also fetch other fields if needed
+          .eq('competition_id', competitionId)
+          .eq('user_id', user.id);
+
+      // If selections already exist, show an error message and return
+      if (existingSelections.isNotEmpty) {
+        _showErrorDialog(
+            'You have already made selections for this competition.');
+        return;
+      }
+
+      // Prepare the entries to insert
+      final List<Map<String, dynamic>> entries =
+          selectedPlayerIds.map((playerId) {
+        final player =
+            players.firstWhere((element) => element['id'] == playerId);
+        return {
+          'competition_id': competitionId,
+          'user_id': user.id,
+          'player_id': playerId,
+          'position': player['position'],
+        };
+      }).toList();
+
+      // Insert the selected players into the database
       final response =
           await Supabase.instance.client.from('selections').insert(entries);
 
+      // Check for error during insertion
       if (response != null && response.error != null) {
         _showErrorDialog(
             'Failed to confirm selections: ${response.error!.message}');
@@ -902,7 +1103,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     );
   }
 
-  // Function to show success dialog
+  // Function to show success dialog and navigate to the leaderboard
   void _showSuccessDialog(String message) {
     showDialog(
       context: context,
@@ -914,7 +1115,15 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // Navigate to another screen or refresh the selections
+                // Navigate to the leaderboard after closing the dialog
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LeaderboardScreen(
+                      competitionId: widget.competitionId,
+                    ),
+                  ),
+                );
               },
               child: const Text('OK'),
             ),

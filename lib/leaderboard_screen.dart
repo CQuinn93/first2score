@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -28,7 +26,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
       // Fetch competition leaderboard (assuming there's a way to order by position/points)
       final response = await supabase
           .from('competition_participants')
-          .select('user_id, position, users(username), remaining_selections')
+          .select(
+              'user_id, position, users(username), remaining_selections, goalscorers')
           .eq('competition_id', widget.competitionId)
           .order('position', ascending: true);
 
@@ -52,34 +51,40 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
           ? const Center(
               child: Text('No leaderboard data available.'),
             )
-          : ListView.builder(
-              itemCount: leaderboardData.length,
-              itemBuilder: (context, index) {
-                final user = leaderboardData[index];
-                return _buildLeaderboardRow(user);
-              },
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('Username')),
+                  DataColumn(label: Text('Remaining Subs')),
+                  DataColumn(label: Text('Goalscorers')),
+                ],
+                rows: leaderboardData.map((user) {
+                  final username = user['users']['username'];
+                  final remainingSubs = user['remaining_selections'];
+                  final goalscorers = user['goalscorers'];
+
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        GestureDetector(
+                          onTap: () => _showUserSelections(user['user_id']),
+                          child: Text(
+                            username,
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                      DataCell(Text(remainingSubs.toString())),
+                      DataCell(Text(goalscorers.toString())),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
-    );
-  }
-
-  Widget _buildLeaderboardRow(Map<String, dynamic> user) {
-    final username = user['users']['username'];
-    final position = user['position'];
-    final remainingSelections = user['remaining_selections'];
-
-    return GestureDetector(
-      onTap: () => _showUserSelections(user['user_id']),
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: ListTile(
-          leading: CircleAvatar(
-            child: Text('$position'),
-          ),
-          title: Text(username),
-          subtitle: Text('Remaining: $remainingSelections'),
-          trailing: const Icon(Icons.arrow_forward_ios),
-        ),
-      ),
     );
   }
 
@@ -94,6 +99,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
           .eq('user_id', userId);
 
       final selections = List<Map<String, dynamic>>.from(response);
+
+      if (!mounted) return; // Ensure the widget is still mounted
 
       showModalBottomSheet(
         context: context,
