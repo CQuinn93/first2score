@@ -1,6 +1,7 @@
-import 'package:application/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dashboard_screen.dart'; // Assuming DashboardScreen is implemented
+import 'login_screen.dart'; // Assuming LoginScreen is implemented
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -13,21 +14,27 @@ class SignUpScreenState extends State<SignUpScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final usernameController = TextEditingController();
-  bool _isSignUpEnabled =
-      false; // Track if the sign-up button should be enabled
-  String? _usernameErrorMessage; // Store the error message for the username
+  bool isLoading = false;
+  bool _isSignUpEnabled = false;
+  String? _usernameErrorMessage;
+
+  // Theme colors
+  final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
+  final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
+  final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
+  final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
+  final themeHintTextColour = const Color.fromARGB(255, 150, 150, 150);
 
   Future<void> _checkUsernameAvailability() async {
     final username = usernameController.text.trim();
-
     try {
       final usernameCheckResponse = await Supabase.instance.client
           .from('users')
           .select('username')
           .eq('username', username)
-          .maybeSingle(); // Check for single match or null
+          .maybeSingle();
 
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
 
       if (usernameCheckResponse != null) {
         setState(() {
@@ -41,8 +48,7 @@ class SignUpScreenState extends State<SignUpScreen> {
         });
       }
     } catch (error) {
-      if (!mounted) return; // Check if the widget is still mounted
-
+      if (!mounted) return;
       setState(() {
         _usernameErrorMessage = 'Failed to check username availability.';
         _isSignUpEnabled = false;
@@ -51,15 +57,12 @@ class SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _signUp() async {
-    if (!_isSignUpEnabled) {
-      return; // Ensure that sign-up can only happen when enabled
-    }
+    if (!_isSignUpEnabled) return;
 
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     final username = usernameController.text.trim();
 
-    // Validate password
     if (password.length < 8 ||
         !RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)').hasMatch(password)) {
       if (mounted) {
@@ -75,14 +78,13 @@ class SignUpScreenState extends State<SignUpScreen> {
     }
 
     try {
-      // Check if the email already exists in the database
       final emailCheckResponse = await Supabase.instance.client
           .from('users')
           .select('email')
           .eq('email', email)
-          .maybeSingle(); // Check for a single match or null
+          .maybeSingle();
 
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
 
       if (emailCheckResponse != null) {
         if (mounted) {
@@ -90,26 +92,22 @@ class SignUpScreenState extends State<SignUpScreen> {
             const SnackBar(content: Text('Email already exists.')),
           );
         }
-        return; // Stop the sign-up process if the email exists
+        return;
       }
 
-      // Attempt to sign up the user
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
       );
 
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
 
-      // Check if the sign-up was successful
       if (response.user != null) {
-        // Insert the user info into the 'users' table
         await Supabase.instance.client.from('users').insert({
           'email': email,
           'username': username,
         });
 
-        // Navigate to DashboardScreen
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -140,46 +138,164 @@ class SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed:
-                  _checkUsernameAvailability, // Check username availability
-              child: const Text('Check Username Availability'),
-            ),
-            if (_usernameErrorMessage !=
-                null) // Show error message if the username is taken
+      backgroundColor: themeBackgroundColour,
+      resizeToAvoidBottomInset: true, // Resizes UI when keyboard appears
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 40), // Add top padding
+              Image.asset(
+                'lib/assets/F2ScoreGreen.png', // Use same logo as Login screen
+                height: 60,
+              ),
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  _usernameErrorMessage!,
-                  style: const TextStyle(color: Colors.red),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Ethnocentric',
+                      ),
+                    ),
+                    const SizedBox(
+                        height: 50), // Space between title and input fields
+                    TextField(
+                      controller: emailController,
+                      style: TextStyle(color: themeTextColour),
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: TextStyle(color: themeHintTextColour),
+                        hintText: 'Enter your email',
+                        hintStyle: TextStyle(color: themeHintTextColour),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: themeTextColour),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: themeMainColour),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      style: TextStyle(color: themeTextColour),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: TextStyle(color: themeHintTextColour),
+                        hintText: 'Enter your password',
+                        hintStyle: TextStyle(color: themeHintTextColour),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: themeTextColour),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: themeMainColour),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: usernameController,
+                      style: TextStyle(color: themeTextColour),
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                        labelStyle: TextStyle(color: themeHintTextColour),
+                        hintText: 'Enter your username',
+                        hintStyle: TextStyle(color: themeHintTextColour),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: themeTextColour),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: themeMainColour),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _checkUsernameAvailability,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: themeMainColour,
+                      ),
+                      child: const Text('Check Username Availability'),
+                    ),
+                    if (_usernameErrorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          _usernameErrorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    const SizedBox(
+                        height: 40), // Space between form and sign-up button
+                    ElevatedButton(
+                      onPressed: isLoading ? null : _signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: themeSecondaryColour,
+                        foregroundColor: themeTextColour,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 100,
+                          vertical: 15,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: isLoading
+                          ? CircularProgressIndicator(
+                              color: themeTextColour,
+                            )
+                          : const Text(
+                              'SIGN UP',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: "Ethnocentric",
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Already have an account? ",
+                          style: TextStyle(color: themeTextColour),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Log in',
+                            style: TextStyle(
+                              color: themeMainColour,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40), // Padding at the bottom
+                  ],
                 ),
               ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed:
-                  _isSignUpEnabled ? _signUp : null, // Enable/disable sign-up
-              child: const Text('Sign Up'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

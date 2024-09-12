@@ -15,7 +15,7 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
   // Theme colors
   final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
   final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
-  final themeTertiaryColour = const Color.fromARGB(255, 0, 55, 15);
+  final themeTertiaryColour = const Color.fromARGB(255, 90, 90, 90);
   final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
   final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
   final themeHintTextColour = const Color.fromARGB(255, 150, 150, 150);
@@ -142,7 +142,8 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
     final hasMadeSelections = competition['hasMadeSelections'] ?? false;
 
     return Card(
-      color: themeTertiaryColour, // Use theme secondary color for the card
+      color: themeSecondaryColour
+          .withOpacity(0.5), // Use theme secondary color for the card
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -155,10 +156,10 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
           children: [
             // Competition Logo (Image)
             Image.asset(
-              'lib/assets/F2ScoreGreen.png', // Replace with your actual image path
+              'lib/assets/F2ScoreGreen.png',
               width: 150,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
 
             // Row for competition name and buttons
             Row(
@@ -169,14 +170,14 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Competition Name',
+                      'Name',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: themeTertiarytColour,
                         fontSize: 12,
                         decoration: TextDecoration.underline,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       competitionName,
                       style: const TextStyle(
@@ -215,11 +216,10 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
                             hasMadeSelections
                                 ? 'lib/assets/transfers_icon.png'
                                 : 'lib/assets/make_selections_icon.png',
-                            height: 20,
-                            width: 20,
+                            height: 15,
+                            width: 15,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
                           hasMadeSelections ? 'Transfers' : 'Selections',
                           style: const TextStyle(
@@ -246,11 +246,10 @@ class MyCompetitionsScreenState extends State<MyCompetitionsScreen> {
                           ),
                           child: Image.asset(
                             'lib/assets/leaderboard_icon.png', // Use your leaderboard icon
-                            height: 20,
-                            width: 20,
+                            height: 15,
+                            width: 15,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         const Text(
                           'Leaderboard',
                           style: TextStyle(

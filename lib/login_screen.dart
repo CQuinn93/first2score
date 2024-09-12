@@ -72,7 +72,8 @@ class LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: themeBackgroundColour, // Use theme background color
-      resizeToAvoidBottomInset: true, // Ensures the UI resizes when keyboard appears
+      resizeToAvoidBottomInset:
+          true, // Ensures the UI resizes when keyboard appears
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -101,18 +102,24 @@ class LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 100),
                     TextField(
                       controller: emailController,
-                      style: TextStyle(color: themeTextColour), // Use theme color
+                      style:
+                          TextStyle(color: themeTextColour), // Use theme color
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        labelStyle: const TextStyle(color: Colors.grey), // Grey label
+                        labelStyle:
+                            const TextStyle(color: Colors.grey), // Grey label
                         hintText: 'Enter your email',
-                        hintStyle: const TextStyle(color: Colors.grey), // Grey hint text
+                        hintStyle: const TextStyle(
+                            color: Colors.grey), // Grey hint text
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: themeTextColour), // White border
+                          borderSide: BorderSide(
+                              color: themeTextColour), // White border
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: themeMainColour), // Green border when focused
+                          borderSide: BorderSide(
+                              color:
+                                  themeMainColour), // Green border when focused
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -120,18 +127,24 @@ class LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: passwordController,
-                      style: TextStyle(color: themeTextColour), // Use theme color
+                      style:
+                          TextStyle(color: themeTextColour), // Use theme color
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        labelStyle: const TextStyle(color: Colors.grey), // Grey label
+                        labelStyle:
+                            const TextStyle(color: Colors.grey), // Grey label
                         hintText: 'Enter your password',
-                        hintStyle: const TextStyle(color: Colors.grey), // Grey hint text
+                        hintStyle: const TextStyle(
+                            color: Colors.grey), // Grey hint text
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: themeTextColour), // White border
+                          borderSide: BorderSide(
+                              color: themeTextColour), // White border
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: themeMainColour), // Green border when focused
+                          borderSide: BorderSide(
+                              color:
+                                  themeMainColour), // Green border when focused
                           borderRadius: BorderRadius.circular(10),
                         ),
                         suffixIcon: const Icon(
@@ -155,7 +168,8 @@ class LoginScreenState extends State<LoginScreen> {
                             ),
                             Text(
                               'Remember me',
-                              style: TextStyle(color: themeTextColour), // White text
+                              style: TextStyle(
+                                  color: themeTextColour), // White text
                             ),
                           ],
                         ),
@@ -163,7 +177,8 @@ class LoginScreenState extends State<LoginScreen> {
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const ForgotPasswordScreen(),
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
                               ),
                             );
                           },
@@ -185,9 +200,11 @@ class LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     ElevatedButton(
-                      onPressed: isLoading ? null : login, // Disable button if loading
+                      onPressed:
+                          isLoading ? null : login, // Disable button if loading
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: themeSecondaryColour, // Use secondary green
+                        backgroundColor:
+                            themeSecondaryColour, // Use secondary green
                         foregroundColor: themeTextColour, // White text
                         padding: const EdgeInsets.symmetric(
                           horizontal: 100,
@@ -215,7 +232,8 @@ class LoginScreenState extends State<LoginScreen> {
                       children: [
                         Text(
                           "Don't have an account? ",
-                          style: TextStyle(color: themeTextColour), // White text
+                          style:
+                              TextStyle(color: themeTextColour), // White text
                         ),
                         TextButton(
                           onPressed: () {
@@ -235,7 +253,8 @@ class LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 40), // Padding below the sign-up section
+                    const SizedBox(
+                        height: 40), // Padding below the sign-up section
                   ],
                 ),
               ),

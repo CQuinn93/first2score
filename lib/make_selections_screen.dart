@@ -1015,7 +1015,6 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
   }
 
   // Function to confirm selections and insert into the database
-  // Function to confirm selections and insert into the database
   void _confirmSelections() async {
     // Ensure the user has selected exactly 20 players
     if (selectedPlayerIds.length != 20) {
