@@ -12,31 +12,35 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class LeaderboardScreenState extends State<LeaderboardScreen> {
-  List<Map<String, dynamic>> leaderboardData = [];
+  List<dynamic> participants = []; // Will hold user IDs and usernames
   final SupabaseClient supabase = Supabase.instance.client;
 
   @override
   void initState() {
     super.initState();
-    fetchLeaderboardData();
+    fetchUsernames();
   }
 
-  Future<void> fetchLeaderboardData() async {
+  // Step 2: Fetch user IDs and usernames
+  Future<void> fetchUsernames() async {
     try {
-      // Fetch competition leaderboard (assuming there's a way to order by position/points)
+      // Fetch user_id and the associated username by joining users table
       final response = await supabase
           .from('competition_participants')
           .select(
-              'user_id, position, users(username), remaining_selections, goalscorers')
-          .eq('competition_id', widget.competitionId)
-          .order('position', ascending: true);
+              'user_id, users!inner(id, username)') // Explicit join with foreign key assumption
+          .eq('competition_id', widget.competitionId);
 
       setState(() {
-        leaderboardData = List<Map<String, dynamic>>.from(response);
+        participants = response; // Save both user_id and username
       });
+
+      if (kDebugMode) {
+        print('Participants fetched: $participants');
+      }
     } catch (error) {
       if (kDebugMode) {
-        print("Error fetching leaderboard: $error");
+        print('Error fetching participants: $error');
       }
     }
   }
@@ -45,105 +49,24 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Leaderboard'),
+        title: const Text('Leaderboard - Usernames'),
       ),
-      body: leaderboardData.isEmpty
+      body: participants.isEmpty
           ? const Center(
-              child: Text('No leaderboard data available.'),
+              child: Text('No user data available.'),
             )
-          : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Username')),
-                  DataColumn(label: Text('Remaining Subs')),
-                  DataColumn(label: Text('Goalscorers')),
-                ],
-                rows: leaderboardData.map((user) {
-                  final username = user['users']['username'];
-                  final remainingSubs = user['remaining_selections'];
-                  final goalscorers = user['goalscorers'];
+          : ListView.builder(
+              itemCount: participants.length,
+              itemBuilder: (context, index) {
+                final user = participants[index];
+                final userId = user['user_id'];
+                final username = user['users']['username'];
 
-                  return DataRow(
-                    cells: [
-                      DataCell(
-                        GestureDetector(
-                          onTap: () => _showUserSelections(user['user_id']),
-                          child: Text(
-                            username,
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataCell(Text(remainingSubs.toString())),
-                      DataCell(Text(goalscorers.toString())),
-                    ],
-                  );
-                }).toList(),
-              ),
+                return ListTile(
+                  title: Text('User: $username (ID: $userId)'),
+                );
+              },
             ),
     );
-  }
-
-  // Function to show a user's selections in a bottom modal sheet
-  void _showUserSelections(String userId) async {
-    try {
-      // Fetch the selections for this user in this competition
-      final response = await supabase
-          .from('selections')
-          .select('players(first_name, last_name, position)')
-          .eq('competition_id', widget.competitionId)
-          .eq('user_id', userId);
-
-      final selections = List<Map<String, dynamic>>.from(response);
-
-      if (!mounted) return; // Ensure the widget is still mounted
-
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-            padding: const EdgeInsets.all(16.0),
-            height: 400, // Adjust height as needed
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'User Selections',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                selections.isEmpty
-                    ? const Text('No selections found for this user.')
-                    : Expanded(
-                        child: ListView.builder(
-                          itemCount: selections.length,
-                          itemBuilder: (context, index) {
-                            final player = selections[index]['players'];
-                            return ListTile(
-                              leading: const Icon(Icons.sports_soccer),
-                              title: Text(
-                                  '${player['first_name']} ${player['last_name']}'),
-                              subtitle: Text(player['position']),
-                            );
-                          },
-                        ),
-                      ),
-              ],
-            ),
-          );
-        },
-      );
-    } catch (error) {
-      if (kDebugMode) {
-        print("Error fetching selections: $error");
-      }
-    }
   }
 }
