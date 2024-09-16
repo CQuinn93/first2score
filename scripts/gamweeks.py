@@ -2,9 +2,8 @@ import os
 import requests
 
 # Set up your Supabase URL and API key
-SUPABASE_URL = 'https://tdbezgjqthdvrtxgvoao.supabase.co'
-SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkYmV6Z2pxdGhkdnJ0eGd2b2FvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyMzExNjU2NCwiZXhwIjoyMDM4NjkyNTY0fQ.rCTliFmz5DA3JLc6zXEpZr_ikCMv8N4E6I9jxk0v_Vk'
-
+SUPABASE_URL = 'SUPABASE_URL'
+SUPABASE_KEY = 'SUPABASE_ANON_KEY'
 # Define the table name where the data will be inserted
 TABLE_NAME = "gameweek"
 
