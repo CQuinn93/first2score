@@ -195,7 +195,8 @@ class OpenCompetitionsScreenState extends State<OpenCompetitionsScreen> {
             ),
             const SizedBox(width: 10.0),
             // Column for Join Button
-            Column(
+            Expanded(flex:1,
+            child: Column(
               children: [
                 ElevatedButton(
                   onPressed: alreadyJoined
@@ -219,6 +220,7 @@ class OpenCompetitionsScreenState extends State<OpenCompetitionsScreen> {
                 ),
               ],
             ),
+            )
           ],
         ),
       ),

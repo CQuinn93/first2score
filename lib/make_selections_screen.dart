@@ -193,24 +193,13 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
     setState(() {
       if (watchlistPlayerIds.contains(playerId)) {
         watchlistPlayerIds.remove(playerId);
-        _showSnackBar('Removed from watchlist');
       } else {
         watchlistPlayerIds.add(playerId);
-        _showSnackBar('Added to watchlist');
       }
     });
   }
 
   // Function to display a SnackBar
-  void _showSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 1),
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: themeMainColour,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
 
   // Map position number to position name
   String _getPositionName(int positionId) {
@@ -1007,7 +996,7 @@ class MakeSelectionsScreenState extends State<MakeSelectionsScreen> {
         );
       }).toList(),
     );
-  }
+  } 
 
   // Build filter widgets for team and position
   Widget _buildFilters() {

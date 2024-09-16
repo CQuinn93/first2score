@@ -60,7 +60,6 @@ class CreateJoinViewState extends State<CreateJoinView> {
       );
       return;
     }
-
     // Generate a join code if the competition is private or code-join
     if (_competitionType == 'code' || _competitionType == 'private') {
       _joinCode = _generateJoinCode();
@@ -286,12 +285,14 @@ class CreateJoinViewState extends State<CreateJoinView> {
   Widget _tabButton(String title, int index) {
     bool isActive = _selectedTabIndex == index;
     return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(5.0, 0, 5.0, 0),
       child: GestureDetector(
         onTap: () => _onTabSelected(index),
         child: Container(
-          height: 50,
+          height: 40,
           decoration: BoxDecoration(
-            color: isActive ? themeSecondaryColour : themeTextColour,
+            color: isActive ? themeSecondaryColour : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: themeMainColour),
           ),
@@ -300,11 +301,12 @@ class CreateJoinViewState extends State<CreateJoinView> {
             title,
             style: TextStyle(
               fontSize: 16,
-              color: isActive ? themeTextColour : themeSecondaryColour,
+              color: isActive ? themeTextColour : themeMainColour,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -360,7 +362,7 @@ class CreateJoinViewState extends State<CreateJoinView> {
                   value: _selectedGameWeek,
                   dropdownColor: themeBackgroundColour,
                   style: TextStyle(color: themeTextColour),
-                  items: List.generate(10, (index) {
+                  items: List.generate(36, (index) {
                     return DropdownMenuItem(
                       value: index + 1,
                       child: Text('Game Week ${index + 1}'),

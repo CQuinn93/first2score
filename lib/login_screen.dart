@@ -3,6 +3,7 @@ import 'package:application/forgot_password_screen.dart';
 import 'package:application/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import for SharedPreferences
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,12 +16,47 @@ class LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false; // Loading state
+  bool rememberMe = false; // Remember Me checkbox state
+  bool obscurePassword = true; // Password visibility toggle
 
   // Theme colors
   final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
   final themeSecondaryColour = const Color.fromARGB(255, 10, 65, 20);
   final themeBackgroundColour = const Color.fromARGB(255, 0, 0, 0);
   final themeTextColour = const Color.fromARGB(255, 255, 255, 255);
+
+  @override
+  void initState() {
+    super.initState();
+    loadRememberedCredentials(); // Load saved credentials when the app starts
+  }
+
+  Future<void> loadRememberedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('email') ?? '';
+    final savedPassword = prefs.getString('password') ?? '';
+    final savedRememberMe = prefs.getBool('rememberMe') ?? false;
+
+    if (savedRememberMe) {
+      emailController.text = savedEmail;
+      passwordController.text = savedPassword;
+      setState(() {
+        rememberMe = true;
+      });
+    }
+  }
+
+  Future<void> saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (rememberMe) {
+      await prefs.setString('email', emailController.text);
+      await prefs.setString('password', passwordController.text);
+    } else {
+      await prefs.remove('email');
+      await prefs.remove('password');
+    }
+    await prefs.setBool('rememberMe', rememberMe);
+  }
 
   Future<void> login() async {
     setState(() {
@@ -37,10 +73,11 @@ class LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
-      if (!mounted) return;
-
       // Check if the login was successful
       if (response.user != null) {
+        await saveCredentials(); // Save credentials if login is successful
+
+        if (!mounted) return; // Ensure the widget is still mounted
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const DashboardScreen(),
@@ -129,6 +166,7 @@ class LoginScreenState extends State<LoginScreen> {
                       controller: passwordController,
                       style:
                           TextStyle(color: themeTextColour), // Use theme color
+                      obscureText: obscurePassword, // Toggle password visibility
                       decoration: InputDecoration(
                         labelText: 'Password',
                         labelStyle:
@@ -147,12 +185,20 @@ class LoginScreenState extends State<LoginScreen> {
                                   themeMainColour), // Green border when focused
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        suffixIcon: const Icon(
-                          Icons.visibility_off,
-                          color: Colors.grey, // Grey color for icon
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.grey, // Grey color for icon
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscurePassword = !obscurePassword; // Toggle visibility
+                            });
+                          },
                         ),
                       ),
-                      obscureText: true,
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -161,8 +207,12 @@ class LoginScreenState extends State<LoginScreen> {
                         Row(
                           children: [
                             Checkbox(
-                              value: true, // Static value for now
-                              onChanged: (bool? value) {},
+                              value: rememberMe,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  rememberMe = value ?? false;
+                                });
+                              },
                               activeColor: themeMainColour, // Green color
                               checkColor: themeTextColour, // White checkmark
                             ),
