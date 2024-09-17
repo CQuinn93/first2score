@@ -21,6 +21,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
   int startGameweek = 0;
   final SupabaseClient supabase = Supabase.instance.client;
   bool isLoading = true;  // Set the initial state to true, indicating data is being loaded.
+   String competitionName = "";
 
   List<String> squads = [
   "ALL",
@@ -76,30 +77,41 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
     fetchLeaderboardData();
   }
 
-  // Step 1: Fetch the usernames and initialize competition stats
-  Future<void> fetchCompetitionStats() async {
-    try {
-      final response = await supabase
-          .from('competition_participants')
-          .select('user_id, users!inner(username)')
-          .eq('competition_id', widget.competitionId);
+  /// Step 1: Fetch the usernames and initialize competition stats
+Future<void> fetchCompetitionStats() async {
+  try {
+    final response = await supabase
+        .from('competition_participants')
+        .select('user_id, competitions!inner(competition_name), users!inner(username)')
+        .eq('competition_id', widget.competitionId);
 
-      competitionStats = response.map<Map<String, dynamic>>((entry) {
-        return {
-          'username': entry['users']['username'],
-          'remainingFootballers': 20,
-        };
-      }).toList();
-      
-      if (kDebugMode) {
-        print('Users in competition: $competitionStats');
-      }
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error fetching competition stats: $error');
-      }
+    // Extract and store competition name (assuming it's the same for all entries)
+    if (response.isNotEmpty) {
+      competitionName = response[0]['competitions']['competition_name'];
+    }
+
+    // Map user competition stats
+    competitionStats = response.map<Map<String, dynamic>>((entry) {
+      return {
+        'username': entry['users']['username'],
+        'remainingFootballers': 20,
+      };
+    }).toList();
+    
+    if (kDebugMode) {
+      print('Users in competition: $competitionStats');
+      print('Competition Name: $competitionName');
+    }
+  } catch (error) {
+    if (kDebugMode) {
+      print('Error fetching competition stats: $error');
     }
   }
+
+  // Call setState to trigger a rebuild with the updated competitionName
+  setState(() {});
+}
+
   // Function to fetch and determine the current gameweek based on the current time and deadline_time
   Future<int> getCurrentGameweek() async {
     try {
@@ -432,7 +444,7 @@ Future<void> fetchLeaderboardData() async {
 }
 
 
-  @override
+ @override
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: themeBackgroundColour, // Set background color to black
@@ -452,12 +464,12 @@ Widget build(BuildContext context) {
             )
           : Column( 
             children: [
-              // Display the competition name
-              const Padding(
-                padding: EdgeInsets.all(16.0),
+              // Display the competition name dynamically from the fetched data
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'Competition Name',  // Replace with actual competition name
-                  style: TextStyle(
+                  competitionName.isNotEmpty ? competitionName : 'Loading...',  // Display the actual competition name
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -559,6 +571,7 @@ Widget build(BuildContext context) {
           ),
   );
 }
+
 
 
 
