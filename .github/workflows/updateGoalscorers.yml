@@ -2,8 +2,7 @@ name: Run FPL Script Twice a Week
 
 on:
   schedule:
-    - cron: '0 22 * * 2'  # Every Tuesday at 22:00 UTC
-    - cron: '0 22 * * 5'  # Every Friday at 22:00 UTC
+    - cron: '0 22 * * *'  # Every Day at 22:00 UTC
 
 jobs:
   run-fpl-script:
@@ -28,4 +27,4 @@ jobs:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: |
-        python scripts/updateSco.py
+        python scripts/updateScorers.py
