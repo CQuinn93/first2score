@@ -21,6 +21,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run the script
+    - name: Run the script 
       run: |
         python scripts/getPlayers.py
