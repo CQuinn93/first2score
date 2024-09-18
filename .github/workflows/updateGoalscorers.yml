@@ -1,8 +1,10 @@
-name: Run FPL Script Twice a Week
+name: Update Goalscorers each day
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # Every Day at 22:00 UTC
+    - cron: '00 14,17,19 * * 6'
+    - cron: '00 2,16,19 * * 0'
+    - cron: '00 2,22 * * 1,2,3,4,5'
 
 jobs:
   run-fpl-script:
