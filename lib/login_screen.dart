@@ -1,5 +1,5 @@
-import 'package:application/dashboard_screen.dart';
 import 'package:application/forgot_password_screen.dart';
+import 'package:application/home_screen_view.dart';
 import 'package:application/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -80,7 +80,7 @@ class LoginScreenState extends State<LoginScreen> {
         if (!mounted) return; // Ensure the widget is still mounted
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const DashboardScreen(),
+            builder: (context) => const HomeScreen(),
           ),
         );
       } else {
@@ -166,7 +166,8 @@ class LoginScreenState extends State<LoginScreen> {
                       controller: passwordController,
                       style:
                           TextStyle(color: themeTextColour), // Use theme color
-                      obscureText: obscurePassword, // Toggle password visibility
+                      obscureText:
+                          obscurePassword, // Toggle password visibility
                       decoration: InputDecoration(
                         labelText: 'Password',
                         labelStyle:
@@ -194,7 +195,8 @@ class LoginScreenState extends State<LoginScreen> {
                           ),
                           onPressed: () {
                             setState(() {
-                              obscurePassword = !obscurePassword; // Toggle visibility
+                              obscurePassword =
+                                  !obscurePassword; // Toggle visibility
                             });
                           },
                         ),

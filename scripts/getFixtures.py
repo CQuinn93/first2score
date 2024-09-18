@@ -1,9 +1,13 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up your Supabase URL and API key from environment variables
-SUPABASE_URL = 'SUPABASE_URL'
-SUPABASE_KEY = 'SUPABASE_ANON_KEY'
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_ANON_KEY')
 
 # Define the table name where the data will be inserted
 TABLE_NAME = "games"
@@ -40,6 +44,7 @@ def pull_fixtures():
         away_team = fixture.get('team_a')  # Away team ID
         home_score = fixture.get('team_h_score')  # Home team score (if available)
         away_score = fixture.get('team_a_score')  # Away team score (if available)
+        finished = fixture.get('finished') # Match status
         
         # Add the fixture data to the list
         fixtures_data.append({
@@ -48,7 +53,8 @@ def pull_fixtures():
             'home_team': home_team,
             'away_team': away_team,
             'home_score': home_score if home_score is not None else None,
-            'away_score': away_score if away_score is not None else None
+            'away_score': away_score if away_score is not None else None,
+            'finished': finished
         })
     
     return fixtures_data

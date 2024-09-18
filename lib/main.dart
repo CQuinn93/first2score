@@ -1,3 +1,4 @@
+import 'package:application/dashboard_screen.dart';
 import 'package:application/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -24,7 +25,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginScreen(),
+      // Define routes for navigation
+      routes: {
+        '/': (context) => const LoginScreen(), // Home is the login screen
+        '/dashboard': (context) => const DashboardScreen(), // Dashboard route
+      },
+      initialRoute: '/', // Start with the login screen
     );
   }
 }
