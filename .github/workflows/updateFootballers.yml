@@ -2,7 +2,7 @@ name: Update Player Data
 
 on:
   schedule:
-    - cron: '0 17 * * 2'
+    - cron: '30 22 * * *'
 
 jobs:
   update-db:
