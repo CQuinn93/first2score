@@ -1,5 +1,9 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up your Supabase URL and API key from environment variables
 SUPABASE_URL = 'https://tdbezgjqthdvrtxgvoao.supabase.co'
@@ -7,6 +11,8 @@ SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 # Define the table name where the data will be inserted
 TABLE_NAME = "games"
+BATCH_SIZE = 500  # Supabase recommends a maximum of 500 rows per insert/upsert request
+
 
 def pull_fixtures():
     """
@@ -32,6 +38,7 @@ def pull_fixtures():
     
     # Loop through the fixtures and extract relevant data
     for fixture in fixtures:
+        match_id = fixture.get('id')    # match ID
         gameweek = fixture.get('event')  # Gameweek number
         home_team = fixture.get('team_h')  # Home team ID
         away_team = fixture.get('team_a')  # Away team ID
@@ -40,6 +47,7 @@ def pull_fixtures():
         
         # Add the fixture data to the list
         fixtures_data.append({
+            'match_id': match_id,
             'gameweek': gameweek,
             'home_team': home_team,
             'away_team': away_team,
@@ -50,9 +58,9 @@ def pull_fixtures():
     return fixtures_data
 
 
-def upsert_fixture_into_db(fixture):
+def upsert_fixtures_batch(fixtures_batch):
     """
-    Insert or update (upsert) a single fixture into the Supabase database.
+    Batch insert or update (upsert) a list of fixtures into the Supabase database.
     """
     url = f'{SUPABASE_URL}/rest/v1/{TABLE_NAME}'
 
@@ -64,27 +72,28 @@ def upsert_fixture_into_db(fixture):
         'Prefer': 'resolution=merge-duplicates'  # Use upsert functionality
     }
 
-    # Make the POST request to upsert fixture data
-    response = requests.post(url, headers=headers, json=fixture)
+    # Make the POST request to upsert batch fixture data
+    response = requests.post(url, headers=headers, json=fixtures_batch)
 
     # Check if the upsert was successful
     if response.status_code in [200, 201]:
-        print(f"Fixture for gameweek {fixture['gameweek']} (Home: {fixture['home_team']} vs Away: {fixture['away_team']}) upserted successfully.")
+        print(f"Batch of {len(fixtures_batch)} fixtures upserted successfully.")
     else:
-        print(f"Error upserting fixture for gameweek {fixture['gameweek']}: {response.status_code} - {response.text}")
+        print(f"Error upserting batch: {response.status_code} - {response.text}")
 
 
 def upsert_fixtures(fixtures_data):
     """
-    Upsert all fixtures data into the Supabase database.
+    Upsert all fixtures data into the Supabase database in batches.
     """
     if not fixtures_data:
         print("No fixtures data to upsert.")
         return
 
-    # Loop through each fixture and upsert it into the database
-    for fixture in fixtures_data:
-        upsert_fixture_into_db(fixture)
+    # Split fixtures_data into batches
+    for i in range(0, len(fixtures_data), BATCH_SIZE):
+        batch = fixtures_data[i:i + BATCH_SIZE]
+        upsert_fixtures_batch(batch)
 
 
 def run_fixtures_update():
@@ -94,9 +103,10 @@ def run_fixtures_update():
     # Step 1: Pull fixtures data from FPL API
     fixtures_data = pull_fixtures()
 
-    # Step 2: Upsert the pulled fixtures data into the Supabase database
+    # Step 2: Upsert the pulled fixtures data into the Supabase database in batches
     upsert_fixtures(fixtures_data)
 
 
 # Run the fixtures update process
+if __name__ == "__main__":
     run_fixtures_update()
