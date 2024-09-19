@@ -1,8 +1,9 @@
 import requests
+import os
 
 # Set up your Supabase URL and API key from environment variables
-SUPABASE_URL = 'SUPABASE_URL'
-SUPABASE_KEY = 'SUPABASE_ANON_KEY'
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_ANON_KEY')
 
 # Define the table name where the data will be inserted
 TABLE_NAME = "games"
