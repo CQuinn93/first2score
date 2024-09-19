@@ -125,54 +125,149 @@ class HomeScreenState extends State<HomeScreen> {
     return 2; // Placeholder value, replace with actual logic
   }
 
-  Widget buildResultsSection() {
-    return Column(
-      children: latestResults.map((game) {
-        final homeTeamIndex = game['home_team'] - 1;
-        final awayTeamIndex = game['away_team'] - 1;
+  // Reusable widget for game display
+Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamImage, String awayTeamImage, {String score = '', String status = ''}) {
+  return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    elevation: 2,
+    color: themeBackgroundColour,
+    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Team logos and score
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Home team logo and name
+              Column(
+                children: [
+                  Image.asset(homeTeamImage, width: 40, height: 40),
+                  const SizedBox(height: 8),
+                  Text(
+                    homeTeamName,
+                    style: TextStyle(
+                      color: themeTextColour,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Score in the middle
+              Column(
+                children: [
+                  Text(
+                    score,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    status,
+                    style: const TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Away team logo and name
+              Column(
+                children: [
+                  Image.asset(awayTeamImage, width: 40, height: 40),
+                  const SizedBox(height: 8),
+                  Text(
+                    awayTeamName,
+                    style: TextStyle(
+                      color: themeTextColour,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          
+          // Game time (optional)
+          const SizedBox(height: 16),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.timer, color: Colors.white70, size: 16),
+              SizedBox(width: 8),
+              Text(
+                '10:00 PM, Sep 20', // Replace with actual date/time data
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
-        final homeTeamName =
-            (homeTeamIndex >= 0 && homeTeamIndex < squads.length)
-                ? squads[homeTeamIndex]
-                : 'Unknown Team';
-        final awayTeamName =
-            (awayTeamIndex >= 0 && awayTeamIndex < squads.length)
-                ? squads[awayTeamIndex]
-                : 'Unknown Team';
+// Build widget to show game results
+Widget buildResultsSection() {
+  return Column(
+    children: latestResults.map((game) {
+      final homeTeamIndex = game['home_team'] - 1;
+      final awayTeamIndex = game['away_team'] - 1;
 
-        final homeTeamImage =
-            teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
-        final awayTeamImage =
-            teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
+      final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
+      final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
 
-        return ListTile(
-          leading: Image.asset(homeTeamImage, width: 30, height: 30),
-          title: Text(
-              '$homeTeamName ${game['home_score']} - ${game['away_score']} $awayTeamName',
-              style: TextStyle(color: themeTextColour)),
-          trailing: Image.asset(awayTeamImage, width: 30, height: 30),
-        );
-      }).toList(),
-    );
-  }
+      final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
+      final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
 
-  Widget buildFixturesSection() {
-    return Column(
-      children: upcomingFixtures.map((game) {
-        final homeTeamName = squads[game['home_team'] - 1];
-        final awayTeamName = squads[game['away_team'] - 1];
-        final homeTeamImage = teamImageMap[homeTeamName];
-        final awayTeamImage = teamImageMap[awayTeamName];
+      return buildGameTile(
+        homeTeamName,
+        awayTeamName,
+        homeTeamImage,
+        awayTeamImage,
+        score: '${game['home_score']} - ${game['away_score']}',
+        status: 'Finished', // Update with actual status if available
+      );
+    }).toList(),
+  );
+}
 
-        return ListTile(
-          leading: Image.asset(homeTeamImage!, width: 30, height: 30),
-          title: Text('$homeTeamName vs $awayTeamName',
-              style: TextStyle(color: themeTextColour)),
-          trailing: Image.asset(awayTeamImage!, width: 30, height: 30),
-        );
-      }).toList(),
-    );
-  }
+// Build widget to show upcoming fixtures
+Widget buildFixturesSection() {
+  return Column(
+    children: upcomingFixtures.map((game) {
+      final homeTeamIndex = game['home_team'] - 1;
+      final awayTeamIndex = game['away_team'] - 1;
+
+      final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
+      final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
+
+      final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
+      final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
+
+      return buildGameTile(
+        homeTeamName,
+        awayTeamName,
+        homeTeamImage,
+        awayTeamImage,
+        status: 'Upcoming', // Update with actual status if available
+      );
+    }).toList(),
+  );
+}
 
   Widget buildGamesSection() {
     return Padding(
@@ -236,20 +331,25 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: themeBackgroundColour,
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('lib/assets/F2ScoreGreen.png', width: 50, height: 50),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                // Placeholder for opening a side drawer
-              },
-            ),
-          ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: themeTextColour),
+          onPressed: () {
+            // Handle drawer action
+          },
         ),
-        backgroundColor: themeBackgroundColour,
+        title: Image.asset(
+          'lib/assets/F2ScoreGreen.png', // Updated logo
+          height: 40,
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: themeTextColour),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -1,9 +1,5 @@
 import os
 import requests
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Set up your Supabase URL and API key from environment variables
 SUPABASE_URL = os.getenv('SUPABASE_URL')
