@@ -1,8 +1,10 @@
 import json
 import requests
+import os
 
-SUPABASE_URL = 'SUPABASE_URL'
-SUPABASE_KEY = 'SUPABASE_ANON_KEY'
+# Get Supabase URL and API Key from environment variables
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 TABLE_NAME = "footballers"
 
 def pull_data():
@@ -66,6 +68,7 @@ def update_db(player_data):
         print(f'Error: {response.status_code} - {response.text}')
 
 
-# Usage
-player_data = pull_data()
-update_db(player_data)
+if __name__ == "__main__":
+    # Fetch data and update database
+    player_data = pull_data()
+    update_db(player_data)
