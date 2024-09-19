@@ -1,0 +1,30 @@
+name: Supabase Fixtures Upsert
+
+on:  # Trigger manually from the GitHub UI
+  schedule:
+    - cron: '00 14,17,19 * * 6'
+    - cron: '00 2,16,19 * * 0'
+    - cron: '00 2,15,22 * * 1,2,3,4,5'
+jobs:
+  update-fixtures:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install requests
+        run: |
+          pip install requests
+
+      - name: Run Python script to update fixtures
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}  # Access the secret from GitHub Secrets
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}  # Access the secret from GitHub Secrets
+        run: |
+          python scripts/getFixtures.py
