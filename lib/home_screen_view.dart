@@ -14,6 +14,8 @@ class HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> latestResults = [];
   List<Map<String, dynamic>> upcomingFixtures = [];
   bool isLoading = true;
+  String username = "User";
+  String selectedGameweek = "";
 
   // Define theme colors as used on the other screens
   final themeMainColour = const Color.fromARGB(255, 0, 165, 30);
@@ -69,8 +71,7 @@ class HomeScreenState extends State<HomeScreen> {
     "Wolves": "lib/assets/Wolves.png",
   };
 
-  String username = "User"; // Placeholder for now; replace with actual username
-
+  
   @override
   void initState() {
     super.initState();
@@ -125,7 +126,7 @@ class HomeScreenState extends State<HomeScreen> {
     return 2; // Placeholder value, replace with actual logic
   }
 
-  // Reusable widget for game display
+  // Reusable widget for game display (with centered content)
 Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamImage, String awayTeamImage, {String score = '', String status = ''}) {
   return Card(
     shape: RoundedRectangleBorder(
@@ -138,40 +139,43 @@ Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamIm
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          // Team logos and score
+          // Team logos and names centered
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Home team logo and name
+              // Home team
               Column(
                 children: [
                   Image.asset(homeTeamImage, width: 40, height: 40),
                   const SizedBox(height: 8),
                   Text(
                     homeTeamName,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: themeTextColour,
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              
-              // Score in the middle
+
+              // Score and status in the middle (centered)
               Column(
                 children: [
                   Text(
                     score,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     status,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.greenAccent,
                       fontSize: 14,
@@ -179,38 +183,22 @@ Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamIm
                   ),
                 ],
               ),
-              
-              // Away team logo and name
+
+              // Away team
               Column(
                 children: [
                   Image.asset(awayTeamImage, width: 40, height: 40),
                   const SizedBox(height: 8),
                   Text(
                     awayTeamName,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: themeTextColour,
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-          
-          // Game time (optional)
-          const SizedBox(height: 16),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.timer, color: Colors.white70, size: 16),
-              SizedBox(width: 8),
-              Text(
-                '10:00 PM, Sep 20', // Replace with actual date/time data
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
               ),
             ],
           ),
@@ -220,54 +208,130 @@ Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamIm
   );
 }
 
-// Build widget to show game results
-Widget buildResultsSection() {
-  return Column(
-    children: latestResults.map((game) {
-      final homeTeamIndex = game['home_team'] - 1;
-      final awayTeamIndex = game['away_team'] - 1;
-
-      final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
-      final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
-
-      final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
-      final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
-
-      return buildGameTile(
-        homeTeamName,
-        awayTeamName,
-        homeTeamImage,
-        awayTeamImage,
-        score: '${game['home_score']} - ${game['away_score']}',
-        status: 'Finished', // Update with actual status if available
-      );
-    }).toList(),
+// Gameweek scrollable row
+Widget buildGameweekScroller() {
+  List<int> gameweeks = List.generate(38, (index) => index + 1); // Assuming 38 gameweeks in a season
+  return SizedBox(
+    height: 50,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: gameweeks.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: ChoiceChip(
+            label: Text(
+              'GW ${gameweeks[index]}',
+              style: const TextStyle(color: Colors.white),
+            ),
+            selected: selectedGameweek == gameweeks[index],
+            onSelected: (bool selected) {
+              setState(() {
+                selectedGameweek = gameweeks[index] as String;
+                fetchResultsForGameweek(selectedGameweek); // Filter results for selected gameweek
+              });
+            },
+            backgroundColor: themeMainColour,
+            selectedColor: Colors.greenAccent,
+          ),
+        );
+      },
+    ),
   );
 }
 
+// Build widget to show game results with gameweek selector
+Widget buildResultsSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Gameweek selector at the top
+      const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'Results',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      buildGameweekScroller(),
+      const SizedBox(height: 16),
+      // Scrollable list of results
+      ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(), // Disable scrolling within the ListView
+        itemCount: filteredResults.length,
+        itemBuilder: (context, index) {
+          final game = filteredResults[index];
+          final homeTeamIndex = game['home_team'] - 1;
+          final awayTeamIndex = game['away_team'] - 1;
+
+          final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
+          final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
+
+          final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
+          final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
+
+          return buildGameTile(
+            homeTeamName,
+            awayTeamName,
+            homeTeamImage,
+            awayTeamImage,
+            score: '${game['home_score']} - ${game['away_score']}',
+            status: 'Finished', // Replace with actual status if needed
+          );
+        },
+      ),
+    ],
+  );
+}
 // Build widget to show upcoming fixtures
 Widget buildFixturesSection() {
   return Column(
-    children: upcomingFixtures.map((game) {
-      final homeTeamIndex = game['home_team'] - 1;
-      final awayTeamIndex = game['away_team'] - 1;
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'Upcoming Fixtures',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: upcomingFixtures.length,
+        itemBuilder: (context, index) {
+          final game = upcomingFixtures[index];
+          final homeTeamIndex = game['home_team'] - 1;
+          final awayTeamIndex = game['away_team'] - 1;
 
-      final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
-      final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
+          final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
+          final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
 
-      final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
-      final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
+          final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
+          final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
 
-      return buildGameTile(
-        homeTeamName,
-        awayTeamName,
-        homeTeamImage,
-        awayTeamImage,
-        status: 'Upcoming', // Update with actual status if available
-      );
-    }).toList(),
+          return buildGameTile(
+            homeTeamName,
+            awayTeamName,
+            homeTeamImage,
+            awayTeamImage,
+            status: 'Upcoming', // Replace with actual status if needed
+          );
+        },
+      ),
+    ],
   );
 }
+
 
   Widget buildGamesSection() {
     return Padding(
@@ -352,48 +416,27 @@ Widget buildFixturesSection() {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Welcome, $username',
-                      style: TextStyle(
-                        color: themeTextColour,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Welcome, $username', // Replace with actual username
+                    style: TextStyle(
+                      color: themeTextColour,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  buildGamesSection(),
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      'Latest Results',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  buildResultsSection(),
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      'Upcoming Fixtures',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  buildFixturesSection(),
-                ],
-              ),
+                ),
+                // Add fixtures and results sections
+                buildResultsSection(),
+                buildFixturesSection(),
+              ],
             ),
-    );
-  }
+          ),
+  );
+}
 }
