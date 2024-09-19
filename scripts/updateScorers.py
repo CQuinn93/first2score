@@ -1,6 +1,4 @@
-import os
 import requests
-import json
 from datetime import datetime, timedelta
 
 SUPABASE_URL = 'SUPABASE_URL'

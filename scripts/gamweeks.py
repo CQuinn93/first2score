@@ -1,4 +1,3 @@
-import os
 import requests
 
 # Set up your Supabase URL and API key
