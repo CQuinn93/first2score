@@ -24,6 +24,6 @@ jobs:
       - name: Run FPL data update script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}  # Load Supabase URL from GitHub Secrets
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}  # Load Supabase API key from GitHub Secrets
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}  # Load Supabase API key from GitHub Secrets
         run: |
           python scripts/getPlayers.py
