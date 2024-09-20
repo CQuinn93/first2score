@@ -13,6 +13,8 @@ class HomeScreenState extends State<HomeScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   List<Map<String, dynamic>> latestResults = [];
   List<Map<String, dynamic>> upcomingFixtures = [];
+  List<Map<String, dynamic>> filteredResults = [];
+
   bool isLoading = true;
   String username = "User";
   String selectedGameweek = "";
@@ -137,70 +139,71 @@ Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamIm
     margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
     child: Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Team logos and names centered
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Home team
-              Column(
-                children: [
-                  Image.asset(homeTeamImage, width: 40, height: 40),
-                  const SizedBox(height: 8),
-                  Text(
-                    homeTeamName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: themeTextColour,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+          // Home team section (team logo and name centered)
+          Expanded(
+            child: Column(
+              children: [
+                Image.asset(homeTeamImage, width: 40, height: 40),
+                const SizedBox(height: 8),
+                Text(
+                  homeTeamName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: themeTextColour,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+          ),
 
-              // Score and status in the middle (centered)
-              Column(
-                children: [
-                  Text(
-                    score,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+          // Score section (centered score and status)
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  score.isEmpty ? '0 - 0' : score, // Default score if empty
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    status,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.greenAccent,
-                      fontSize: 14,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  status.isEmpty ? 'SAT 15:00' : status, // Default status if empty
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+          ),
 
-              // Away team
-              Column(
-                children: [
-                  Image.asset(awayTeamImage, width: 40, height: 40),
-                  const SizedBox(height: 8),
-                  Text(
-                    awayTeamName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: themeTextColour,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+          // Away team section (team logo and name centered)
+          Expanded(
+            child: Column(
+              children: [
+                Image.asset(awayTeamImage, width: 40, height: 40),
+                const SizedBox(height: 8),
+                Text(
+                  awayTeamName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: themeTextColour,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -208,7 +211,7 @@ Widget buildGameTile(String homeTeamName, String awayTeamName, String homeTeamIm
   );
 }
 
-// Gameweek scrollable row
+
 Widget buildGameweekScroller() {
   List<int> gameweeks = List.generate(38, (index) => index + 1); // Assuming 38 gameweeks in a season
   return SizedBox(
@@ -224,11 +227,11 @@ Widget buildGameweekScroller() {
               'GW ${gameweeks[index]}',
               style: const TextStyle(color: Colors.white),
             ),
-            selected: selectedGameweek == gameweeks[index],
+            selected: selectedGameweek == gameweeks[index].toString(),
             onSelected: (bool selected) {
               setState(() {
-                selectedGameweek = gameweeks[index] as String;
-                fetchResultsForGameweek(selectedGameweek); // Filter results for selected gameweek
+                selectedGameweek = gameweeks[index].toString();
+                fetchResultsForGameweek(selectedGameweek); // Fetch results for selected gameweek
               });
             },
             backgroundColor: themeMainColour,
@@ -238,6 +241,25 @@ Widget buildGameweekScroller() {
       },
     ),
   );
+}
+
+// Method to fetch results for the selected gameweek
+Future<void> fetchResultsForGameweek(String gameweek) async {
+  try {
+    // Fetch results for the selected gameweek from the Supabase database
+    final response = await supabase
+        .from('games')
+        .select('*')
+        .eq('gameweek', int.parse(gameweek)); // Assuming gameweek is stored as an integer
+
+    setState(() {
+      filteredResults = List<Map<String, dynamic>>.from(response);
+    });
+  } catch (error) {
+    if (kDebugMode) {
+      print('Error fetching results for gameweek $gameweek: $error');
+    }
+  }
 }
 
 // Build widget to show game results with gameweek selector
@@ -288,6 +310,7 @@ Widget buildResultsSection() {
     ],
   );
 }
+
 // Build widget to show upcoming fixtures
 Widget buildFixturesSection() {
   return Column(
@@ -324,13 +347,14 @@ Widget buildFixturesSection() {
             awayTeamName,
             homeTeamImage,
             awayTeamImage,
-            status: 'Upcoming', // Replace with actual status if needed
+            status: 'SAT 15:00', // Example status
           );
         },
       ),
     ],
   );
 }
+
 
 
   Widget buildGamesSection() {
