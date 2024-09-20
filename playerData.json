@@ -118,7 +118,7 @@
         "team": 1,
         "expected_goals": 0.46,
         "expected_assists": 0.74,
-        "news": "Ankle injury - 50% chance of playing"
+        "news": "Ankle injury - Unknown return date"
     },
     {
         "id": 15,
@@ -151,7 +151,7 @@
         "team": 1,
         "expected_goals": 1.4,
         "expected_assists": 1.02,
-        "news": "Knock - 75% chance of playing"
+        "news": ""
     },
     {
         "id": 18,
@@ -228,7 +228,7 @@
         "team": 1,
         "expected_goals": 0.0,
         "expected_assists": 0.04,
-        "news": "Calf injury - 75% chance of playing"
+        "news": "Calf injury - 50% chance of playing"
     },
     {
         "id": 73,
@@ -261,7 +261,7 @@
         "team": 1,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Knock - 50% chance of playing"
+        "news": ""
     },
     {
         "id": 597,
@@ -393,7 +393,7 @@
         "team": 2,
         "expected_goals": 0.0,
         "expected_assists": 0.01,
-        "news": "Hamstring injury - Expected back 21 Sep"
+        "news": "Hamstring injury - Expected back 29 Sep"
     },
     {
         "id": 33,
@@ -503,7 +503,7 @@
         "team": 2,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Knee injury - 50% chance of playing"
+        "news": "Knee injury - 25% chance of playing"
     },
     {
         "id": 43,
@@ -580,7 +580,7 @@
         "team": 2,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Knee injury - 50% chance of playing"
+        "news": "Knee injury - 25% chance of playing"
     },
     {
         "id": 50,
@@ -1185,7 +1185,7 @@
         "team": 4,
         "expected_goals": 0.1,
         "expected_assists": 0.46,
-        "news": "Calf injury - Expected back 28 Sep"
+        "news": "Calf injury - Expected back 19 Oct"
     },
     {
         "id": 96,
@@ -1823,7 +1823,7 @@
         "team": 5,
         "expected_goals": 0.0,
         "expected_assists": 0.02,
-        "news": "Muscle injury - 75% chance of playing"
+        "news": ""
     },
     {
         "id": 595,
@@ -2109,7 +2109,7 @@
         "team": 6,
         "expected_goals": 0.03,
         "expected_assists": 0.11,
-        "news": "Thigh injury - Unknown return date"
+        "news": "Thigh injury - 50% chance of playing"
     },
     {
         "id": 172,
@@ -2142,7 +2142,7 @@
         "team": 6,
         "expected_goals": 0.0,
         "expected_assists": 0.18,
-        "news": "Hamstring injury - Expected back 21 Sep"
+        "news": "Hamstring injury - 50% chance of playing"
     },
     {
         "id": 175,
@@ -2736,7 +2736,7 @@
         "team": 8,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Groin Injury - Unknown return date"
+        "news": "Lack of match fitness - Expected back 28 Sep"
     },
     {
         "id": 220,
@@ -2747,7 +2747,7 @@
         "team": 8,
         "expected_goals": 1.12,
         "expected_assists": 0.41,
-        "news": ""
+        "news": "Illness - 75% chance of playing"
     },
     {
         "id": 221,
@@ -2758,7 +2758,7 @@
         "team": 8,
         "expected_goals": 0.62,
         "expected_assists": 0.01,
-        "news": "Ankle injury - 50% chance of playing"
+        "news": "Calf injury - Unknown return date"
     },
     {
         "id": 222,
@@ -2769,7 +2769,7 @@
         "team": 8,
         "expected_goals": 0.2,
         "expected_assists": 0.08,
-        "news": ""
+        "news": "Personal Reasons - Expected back 28 Sep"
     },
     {
         "id": 223,
@@ -2780,7 +2780,7 @@
         "team": 8,
         "expected_goals": 0.0,
         "expected_assists": 0.05,
-        "news": ""
+        "news": "Illness - 75% chance of playing"
     },
     {
         "id": 224,
@@ -2791,7 +2791,7 @@
         "team": 8,
         "expected_goals": 0.79,
         "expected_assists": 0.47,
-        "news": ""
+        "news": "Illness - 75% chance of playing"
     },
     {
         "id": 225,
@@ -2835,7 +2835,7 @@
         "team": 8,
         "expected_goals": 0.26,
         "expected_assists": 0.02,
-        "news": ""
+        "news": "Thigh injury - 75% chance of playing"
     },
     {
         "id": 229,
@@ -2868,7 +2868,7 @@
         "team": 8,
         "expected_goals": 0.0,
         "expected_assists": 0.06,
-        "news": ""
+        "news": "Illness - 75% chance of playing"
     },
     {
         "id": 232,
@@ -2890,7 +2890,7 @@
         "team": 8,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Hamstring injury - Unknown return date"
+        "news": "Lack of match fitness - Expected back 28 Sep"
     },
     {
         "id": 235,
@@ -2912,7 +2912,7 @@
         "team": 8,
         "expected_goals": 0.37,
         "expected_assists": 0.23,
-        "news": ""
+        "news": "Back injury - 75% chance of playing"
     },
     {
         "id": 237,
@@ -4441,7 +4441,7 @@
         "team": 13,
         "expected_goals": 1.21,
         "expected_assists": 2.17,
-        "news": ""
+        "news": "Knock - 75% chance of playing"
     },
     {
         "id": 346,
@@ -4804,7 +4804,7 @@
         "team": 14,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Hamstring injury - Expected back 21 Sep"
+        "news": "Hamstring injury - 50% chance of playing"
     },
     {
         "id": 376,
@@ -4881,7 +4881,7 @@
         "team": 14,
         "expected_goals": 0.39,
         "expected_assists": 0.03,
-        "news": "Knock - Unknown return date"
+        "news": "Knock - 50% chance of playing"
     },
     {
         "id": 383,
@@ -4925,7 +4925,7 @@
         "team": 14,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Calf injury - Expected back 21 Sep"
+        "news": "Calf injury - Unknown return date"
     },
     {
         "id": 389,
@@ -5607,7 +5607,7 @@
         "team": 16,
         "expected_goals": 0.02,
         "expected_assists": 0.06,
-        "news": "Knock - 75% chance of playing"
+        "news": "Hamstring injury - Expected back 23 Nov"
     },
     {
         "id": 443,
@@ -5915,7 +5915,7 @@
         "team": 17,
         "expected_goals": 0.0,
         "expected_assists": 0.0,
-        "news": "Ankle injury - Expected back 21 Sep"
+        "news": "Ankle injury - 50% chance of playing"
     },
     {
         "id": 463,
@@ -6487,7 +6487,7 @@
         "team": 18,
         "expected_goals": 0.0,
         "expected_assists": 0.04,
-        "news": ""
+        "news": "Muscle injury - 75% chance of playing"
     },
     {
         "id": 510,
@@ -6531,7 +6531,7 @@
         "team": 18,
         "expected_goals": 0.42,
         "expected_assists": 0.08,
-        "news": ""
+        "news": "Muscle injury - 25% chance of playing"
     },
     {
         "id": 388,
