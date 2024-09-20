@@ -294,8 +294,8 @@ Widget buildResultsSection() {
           final homeTeamName = (homeTeamIndex >= 0 && homeTeamIndex < squads.length) ? squads[homeTeamIndex] : 'Unknown Team';
           final awayTeamName = (awayTeamIndex >= 0 && awayTeamIndex < squads.length) ? squads[awayTeamIndex] : 'Unknown Team';
 
-          final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/default_team.png';
-          final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/default_team.png';
+          final homeTeamImage = teamImageMap[homeTeamName] ?? 'lib/assets/logo.png';
+          final awayTeamImage = teamImageMap[awayTeamName] ?? 'lib/assets/logo.png';
 
           return buildGameTile(
             homeTeamName,
