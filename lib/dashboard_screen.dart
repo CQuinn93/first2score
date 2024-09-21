@@ -1,3 +1,4 @@
+import 'package:application/home_screen_view.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'create_join_view.dart'; // Import your CreateJoinView
@@ -103,17 +104,21 @@ class DashboardScreenState extends State<DashboardScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _menuButton("Create / Join", 0),
-                _menuButton("My Competitions", 1),
-                _menuButton("Open Competitions", 2),
+                _menuButton("Home", 0),
+                _menuButton("Create / Join", 1),
+                _menuButton("My Competitions", 2),
+                _menuButton("Open Competitions", 3),
               ],
             ),
           ),
+          const SizedBox(height: 5),
+          const Divider(color: Colors.white, thickness: 1), // White line separator
           const SizedBox(height: 20),
           Expanded(
             child: IndexedStack(
               index: _selectedIndex,
               children: [
+                const HomeScreen(),
                 const CreateJoinView(), // Tab 1: Create/Join Competitions
                 MyCompetitionsScreen(
                   key:
@@ -129,7 +134,9 @@ class DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+          
         ],
+        
       ),
     );
   }

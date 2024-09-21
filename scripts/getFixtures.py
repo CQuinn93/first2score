@@ -41,6 +41,7 @@ def pull_fixtures():
         home_score = fixture.get('team_h_score')  # Home team score (if available)
         away_score = fixture.get('team_a_score')  # Away team score (if available)
         finished = fixture.get('finished') # Match status
+        kickoff_time = fixture.get('kickoff_time') # Kickoff time of the match
         
         # Add the fixture data to the list
         fixtures_data.append({
@@ -50,7 +51,8 @@ def pull_fixtures():
             'away_team': away_team,
             'home_score': home_score if home_score is not None else None,
             'away_score': away_score if away_score is not None else None,
-            'finished': finished
+            'finished': finished,
+            'kickoff_time': kickoff_time
         })
     
     return fixtures_data
