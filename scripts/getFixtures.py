@@ -9,6 +9,17 @@ SUPABASE_KEY = os.getenv('SUPABASE_ANON_KEY')
 TABLE_NAME = "games"
 BATCH_SIZE = 500  # Supabase recommends a maximum of 500 rows per insert/upsert request
 
+# Assuming you have a way to map player IDs to player names
+# This could be a separate API or database in your project.
+def get_player_name(player_id):
+    # Placeholder: You would replace this with actual logic to resolve player names.
+    # This could be a lookup from a player database, an API call, etc.
+    player_name_map = {
+        389: 'Player A',  # Example: Replace with real data
+        # Add more player IDs and names
+    }
+    return player_name_map.get(player_id, f"Player {player_id}")  # Return a default if not found
+
 
 def pull_fixtures():
     """
@@ -43,7 +54,23 @@ def pull_fixtures():
         finished = fixture.get('finished') # Match status
         kickoff_time = fixture.get('kickoff_time') # Kickoff time of the match
         
-        # Add the fixture data to the list
+        # Extract goalscorers for home and away teams
+        goalscorers = []
+
+        if 'stats' in fixture:
+            stats = fixture['stats']
+            for stat in stats:
+                if stat['identifier'] == 'goals_scored':
+                    # Home team goals
+                    for scorer in stat.get('h', []):
+                        player_name = get_player_name(scorer['element'])
+                        goalscorers.append(f"{player_name} (Home)")
+                    # Away team goals
+                    for scorer in stat.get('a', []):
+                        player_name = get_player_name(scorer['element'])
+                        goalscorers.append(f"{player_name} (Away)")
+        
+        # Add the fixture data to the list, including goalscorers
         fixtures_data.append({
             'match_id': match_id,
             'gameweek': gameweek,
@@ -52,7 +79,8 @@ def pull_fixtures():
             'home_score': home_score if home_score is not None else None,
             'away_score': away_score if away_score is not None else None,
             'finished': finished,
-            'kickoff_time': kickoff_time
+            'kickoff_time': kickoff_time,
+            'goalscorers': goalscorers  # Add goalscorers to the data
         })
     
     return fixtures_data
