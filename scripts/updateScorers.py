@@ -1,8 +1,9 @@
 import requests
 from datetime import datetime, timedelta
+import os
 
-SUPABASE_URL = 'SUPABASE_URL'
-SUPABASE_KEY = 'SUPABASE_ANON_KEY'
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 TABLE_NAME_FOOTBALLERS = "footballers"
 TABLE_NAME_SELECTIONS = "selections"
 
