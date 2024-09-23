@@ -90,6 +90,8 @@ flutter:
     - lib/assets/transfers_icon.png
     - lib/assets/F2ScoreGreen.png
     - lib/assets/goal.png
+    - lib/assets/mainLogo.png
+    - lib/assets/F2LM_Logo.png
   
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
