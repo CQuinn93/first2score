@@ -1,5 +1,5 @@
-import 'package:application/dashboard_screen.dart';
-import 'package:application/login_screen.dart';
+import 'package:application/first2Score/dashboard_screen.dart';
+import 'package:application/Login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
