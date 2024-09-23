@@ -1,6 +1,6 @@
-import 'package:application/first2Score/dashboard_screen.dart';
 import 'package:application/Login/forgot_password_screen.dart';
 import 'package:application/Login/signup_screen.dart';
+import 'package:application/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import for SharedPreferences
@@ -80,7 +80,7 @@ class LoginScreenState extends State<LoginScreen> {
         if (!mounted) return; // Ensure the widget is still mounted
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const DashboardScreen(),
+            builder: (context) => const HomeScreen(),
           ),
         );
       } else {
@@ -117,8 +117,8 @@ class LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 40), // Add top padding
               Image.asset(
-                'lib/assets/F2ScoreGreen.png', // Use dark theme logo here
-                height: 60,
+                'lib/assets/mainLogo.png', // Use dark theme logo here
+                height: 135,
               ),
 
               // Center the text fields
@@ -127,15 +127,6 @@ class LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center, // Center content
                   children: [
-                    const Text(
-                      'Welcome',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white, // White text color from theme
-                        fontFamily: 'Ethnocentric', // Use custom font here
-                      ),
-                    ),
                     const SizedBox(height: 100),
                     TextField(
                       controller: emailController,
