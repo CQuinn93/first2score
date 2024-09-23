@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
+  bool _isExpanded = false; // Add a state variable to track whether the card is expanded
 
   List<Map<String, dynamic>> allGames = []; // Store all games here
   List<Map<String, dynamic>> filteredResults = [];
@@ -58,26 +59,51 @@ class HomeScreenState extends State<HomeScreen> {
     fetchUsername(); // Fetch the logged-in user's username
   }
 
-  // Fetch all games (fixtures + results)
   Future<void> fetchGameData() async {
-    try {
-      final response = await Supabase.instance.client
-          .from('games')
-          .select('*')
-          .order('kickoff_time', ascending: true); // Fetch all games
+  try {
+    // Fetch all games
+    final response = await Supabase.instance.client
+        .from('games')
+        .select('*')
+        .order('kickoff_time', ascending: true); // Fetch all games
 
-      if (response.isNotEmpty) {
-        setState(() {
-          allGames = List<Map<String, dynamic>>.from(response);
-          // Split games into fixtures and results
-          filteredFixtures = allGames.where((game) => game['finished'] == false).toList();
-          filteredResults = allGames.where((game) => game['finished'] == true).toList();
-        });
-      }
-    } catch (error) {
-      if (kDebugMode) print("Error fetching game data: $error");
+    // Fetch all footballers
+    final playersResponse = await Supabase.instance.client
+        .from('footballers')
+        .select('id, first_name, last_name');
+
+    // Convert the footballers list into a map for quick lookups
+    Map<int, String> playerNamesMap = {};
+    for (var player in playersResponse) {
+      playerNamesMap[player['id']] =
+          '${player['first_name']} ${player['last_name']}'; // Store player full names
     }
+
+    if (response.isNotEmpty) {
+      setState(() {
+        allGames = List<Map<String, dynamic>>.from(response);
+
+        // Replace player IDs in goalscorers with actual names
+        for (var game in allGames) {
+          if (game['goalscorers'] != null) {
+            List<String> updatedGoalscorers = replacePlayerIdsWithNames(
+                List<String>.from(game['goalscorers']), playerNamesMap);
+            game['goalscorers'] = updatedGoalscorers;
+          }
+        }
+
+        // Split games into fixtures and results
+        filteredFixtures =
+            allGames.where((game) => game['finished'] == false).toList();
+        filteredResults =
+            allGames.where((game) => game['finished'] == true).toList();
+      });
+    }
+  } catch (error) {
+    if (kDebugMode) print("Error fetching game data: $error");
   }
+}
+
 
   // Fetch the username from Supabase
   Future<void> fetchUsername() async {
@@ -109,6 +135,19 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  List<int> extractPlayerIds(List<String> goalscorers) {
+  // Extract player IDs from the string format: "Player 317 (Away)"
+  return goalscorers.map((goalscorer) {
+    final regex = RegExp(r'Player (\d+)'); // Regular expression to capture the ID
+    final match = regex.firstMatch(goalscorer);
+    if (match != null) {
+      return int.parse(match.group(1)!); // Get the player ID as an integer
+    }
+    return null;
+  }).whereType<int>().toList(); // Filter out nulls and keep only valid integers
+}
+
+
   // Apply filters based on selected gameweek and team
   List<Map<String, dynamic>> applyFilters(List<Map<String, dynamic>> games) {
     return games.where((game) {
@@ -118,16 +157,10 @@ class HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
- Widget buildGameTile(
-  String homeTeamName,
-  String awayTeamName,
-  String homeTeamImage,
-  String awayTeamImage, {
-  String? homeScore,
-  String? awayScore,
-  DateTime? matchDate,
-  List<String>? goalscorers, // Add goalscorers as an optional parameter
-}) {
+ Widget buildGameTile(String homeTeamName, String awayTeamName,
+    String homeTeamImage, String awayTeamImage,
+    {String? homeScore, String? awayScore, DateTime? matchDate, List<String>? goalscorers}) {
+  
   // Check if this is a fixture (date and time) or a result (homeScore and awayScore)
   bool isResult = homeScore != null && awayScore != null;
 
@@ -136,167 +169,147 @@ class HomeScreenState extends State<HomeScreen> {
   String? formattedTime;
   if (matchDate != null) {
     formattedDate = "${matchDate.day}-${matchDate.month}-${matchDate.year}";
-    formattedTime = "${matchDate.hour}:${matchDate.minute.toString().padLeft(2, '0')}";
+    formattedTime = "${matchDate.hour}:${matchDate.minute.toString().padLeft(2, '0')}"; // Add leading zero to minutes if needed
   }
 
-  return StatefulBuilder(
-    builder: (BuildContext context, StateSetter setState) {
-      bool isExpanded = false;
-
-      return Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        elevation: 2,
-        color: themeBackgroundColour,
-        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              isExpanded = !isExpanded;
-            });
-          },
-          child: Column(
-            children: [
-              // Main content (team names and scores or date/time)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  return GestureDetector(
+    onTap: () {
+      if (isResult) {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      }
+    },
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      elevation: 2,
+      color: themeBackgroundColour,
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Column(
+        children: [
+          Divider(
+            color: themeMainColour.withOpacity(0.8),
+            thickness: 1.0,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    // First column: Team Logos and Names
-                    Row(
-                      children: [
-                        Image.asset(homeTeamImage, width: 30, height: 30),
-                        const SizedBox(width: 8),
-                        Text(
-                          homeTeamName,
-                          style: TextStyle(
-                            color: themeTextColour,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 20), // Space between logos and names
-                        Image.asset(awayTeamImage, width: 30, height: 30),
-                        const SizedBox(width: 8),
-                        Text(
-                          awayTeamName,
-                          style: TextStyle(
-                            color: themeTextColour,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // Second column: Scores or Date/Time
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: isResult
-                          ? [
-                              // Display home and away scores if this is a result
-                              Container(
-                                width: 50,
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white, // White outline for the box
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  homeScore,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: themeTextColour,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                width: 50,
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white, // White outline for the box
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  awayScore,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: themeTextColour,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ]
-                          : [
-                              // Display date and time if this is a fixture
+                    // First column: Team logos and names stacked (flex 7)
+                    Expanded(
+                      flex: 7,
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Image.asset(homeTeamImage, width: 30, height: 30),
+                              const SizedBox(width: 8),
                               Text(
-                                formattedDate ?? '',
-                                style: TextStyle(
-                                  color: themeTertiaryColour, // Change to tertiary color
-                                  fontSize: 12, // Smaller font
-                                ),
-                              ),
-                              const SizedBox(height: 8), // Space between date and time
-                              Text(
-                                formattedTime ?? '',
-                                style: TextStyle(
-                                  color: themeTertiaryColour, // Change to tertiary color
-                                  fontSize: 12, // Smaller font
-                                ),
-                              ),
-                            ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Expanded section for goalscorers
-              if (isExpanded)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: goalscorers != null && goalscorers.isNotEmpty
-                        ? goalscorers.map((scorer) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: Text(
-                                scorer,
+                                homeTeamName,
                                 style: TextStyle(
                                   color: themeTextColour,
                                   fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          }).toList()
-                        : [
-                            Text(
-                              'No goalscorers for this game.',
-                              style: TextStyle(color: themeTertiaryColour, fontSize: 14),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Image.asset(awayTeamImage, width: 30, height: 30),
+                              const SizedBox(width: 8),
+                              Text(
+                                awayTeamName,
+                                style: TextStyle(
+                                  color: themeTextColour,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Second column: Either scores for results or date/time for fixtures (flex 3)
+                    Expanded(
+                      flex: 3,
+                      child: isResult
+                          ? Column(
+                              children: [
+                                Container(
+                                  width: 50,
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.white, width: 1.5),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    homeScore,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: themeTextColour,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: 50,
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.white, width: 1.5),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    awayScore ?? '0',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: themeTextColour,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                Text(
+                                  formattedDate ?? '',
+                                  style: TextStyle(
+                                    color: themeTertiaryColour,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  formattedTime ?? '',
+                                  style: TextStyle(
+                                    color: themeTertiaryColour,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                  ),
+                    ),
+                  ],
                 ),
-            ],
+                // We won't add a goalscorers section for fixtures, so it remains as is
+              ],
+            ),
           ),
-        ),
-      );
-    },
+        ],
+      ),
+    ),
   );
 }
-
 
 
 
@@ -312,6 +325,23 @@ class HomeScreenState extends State<HomeScreen> {
     }
     return groupedGames;
   }
+
+  List<String> replacePlayerIdsWithNames(List<String> goalscorers, Map<int, String> playerNamesMap) {
+  return goalscorers.map((goalscorer) {
+    final regex = RegExp(r'Player (\d+)'); // Regex to extract player ID
+    final match = regex.firstMatch(goalscorer);
+    if (match != null) {
+      int playerId = int.parse(match.group(1)!); // Extract player ID
+      String? playerName = playerNamesMap[playerId]; // Lookup player name
+      if (playerName != null) {
+        // Replace the "Player X (Home/Away)" with the actual player name
+        return goalscorer.replaceFirst(RegExp(r'Player \d+'), playerName);
+      }
+    }
+    return goalscorer; // Return the original string if no match
+  }).toList();
+}
+
 
   Widget buildResultsSection() {
   // Apply the selected filters to the results
@@ -395,6 +425,8 @@ class HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
 Widget buildFixturesSection() {
   // Apply the selected filters to the fixtures
   List<Map<String, dynamic>> filtered = applyFilters(filteredFixtures);
@@ -457,13 +489,13 @@ Widget buildFixturesSection() {
                           matchDate = DateTime.now(); // Placeholder date if not available
                         }
 
-                        // Pass the date and time for fixtures
+                        // Revert to showing date and time for upcoming fixtures
                         return buildGameTile(
                           homeTeamName,
                           awayTeamName,
                           homeTeamImage,
                           awayTeamImage,
-                          matchDate: matchDate, // Pass the matchDate here
+                          matchDate: matchDate, // Pass the matchDate here for fixtures
                         );
                       }).toList(),
                     ),
@@ -477,6 +509,8 @@ Widget buildFixturesSection() {
     ],
   );
 }
+
+
 
 
 
@@ -656,3 +690,4 @@ Widget buildFilters({required bool isResultsTab}) {
     return Center(child: Text('Latest Player Updates Content', style: TextStyle(color: themeTextColour)));
   }
 }
+
